@@ -1,0 +1,39 @@
+{
+  "name": "finsource-tax-calculator",
+  "version": "1.0.0",
+  "description": "Bangladesh Income Tax Calculator FY 2025-26",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:electron:win": "electron-builder --win",
+    "build:electron:mac": "electron-builder --mac",
+    "build:electron:all": "electron-builder -mw",
+    "cap:sync": "cap sync",
+    "cap:open:android": "cap open android"
+  },
+  "dependencies": {
+    "jsdom": "^29.1.1",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "@capacitor/cli": "^6.0.0"
+  },
+  "build": {
+    "appId": "com.finsource.taxcalculator",
+    "productName": "FinSource Tax Calc",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.png"
+    }
+  }
+}

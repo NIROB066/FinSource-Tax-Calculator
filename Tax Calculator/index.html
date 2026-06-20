@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangladesh Income Tax Calculator 2025-26 | FinSource | NBR Compliant</title>
+    <meta name="description" content="Bangladesh income tax calculator FY 2025-26 with monthly salary breakdown, TDS schedule, investment rebate chart, and all NBR rules.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <link rel="apple-touch-icon" href="icon.png">
+    <style>
+        /* ── Additional styles for new features ── */
+        .month-salary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .month-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
+        .month-card-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .month-card-sub { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+        .month-card.july-card { border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.04); }
+        .month-card.aug-card { border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.04); }
+
+        /* Salary Breakdown Table */
+        .breakdown-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-muted); padding: 10px 0 8px; border-top: 1px solid var(--border); margin-top: 8px; user-select: none; }
+        .breakdown-toggle:hover { color: var(--text-secondary); }
+        .breakdown-toggle svg { transition: transform 0.3s; }
+        .breakdown-toggle.open svg { transform: rotate(180deg); }
+        .breakdown-table-wrap { overflow: hidden; transition: max-height 0.4s ease; max-height: 0; }
+        .breakdown-table-wrap.open { max-height: 600px; }
+        .breakdown-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+        .breakdown-tbl th { text-align: left; padding: 7px 10px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); }
+        .breakdown-tbl th:last-child, .breakdown-tbl td:last-child { text-align: right; }
+        .breakdown-tbl th:nth-child(2), .breakdown-tbl td:nth-child(2) { text-align: right; }
+        .breakdown-tbl th:nth-child(3), .breakdown-tbl td:nth-child(3) { text-align: right; }
+        .breakdown-tbl td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-secondary); }
+        .breakdown-tbl td:first-child { color: var(--text-primary); font-weight: 500; }
+        .breakdown-tbl tr.subtotal td { color: var(--accent-amber); font-weight: 700; background: rgba(245,158,11,0.06); }
+        .breakdown-tbl tr.exempt-row td { color: var(--accent-green); }
+        .breakdown-tbl tr.taxable-row td { color: #fff; font-weight: 700; font-size: 13px; background: rgba(16,185,129,0.08); border-radius: 4px; }
+        .breakdown-tbl tr.total-row td { color: #fff; font-weight: 800; background: rgba(16,185,129,0.12); }
+        .pct-badge { font-size: 10px; color: var(--text-muted); background: rgba(255,255,255,0.06); border-radius: 4px; padding: 1px 5px; margin-left: 4px; }
+
+        /* PF section */
+        .pf-box { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 8px; }
+        .pf-box-title { font-size: 12px; font-weight: 700; color: #a5b4fc; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .pf-item { font-size: 12px; color: var(--text-secondary); }
+        .pf-item strong { color: var(--text-primary); display: block; font-size: 13px; margin-top: 2px; }
+
+        /* TDS Schedule */
+        .tds-schedule { margin-top: 6px; }
+        .tds-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .tds-table th { padding: 8px 10px; background: rgba(255,255,255,0.05); font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; text-align: right; }
+        .tds-table th:first-child { text-align: left; }
+        .tds-table td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); text-align: right; color: var(--text-secondary); font-size: 12px; }
+        .tds-table td:first-child { text-align: left; color: var(--text-primary); font-weight: 500; }
+        .tds-table tr.july-row td { color: var(--accent-amber); }
+        .tds-table tr.total-row td { font-weight: 700; background: rgba(16,185,129,0.1); color: var(--accent-green); border-top: 1px solid rgba(16,185,129,0.2); }
+        .tds-monthly-amount { font-size: 22px; font-weight: 800; color: var(--accent-green); }
+        .tds-label-sm { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+
+        /* Investment Capacity Chart */
+        .inv-chart { margin-top: 12px; }
+        .inv-chart-row { margin-bottom: 14px; }
+        .inv-chart-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 12px; }
+        .inv-chart-name { color: var(--text-secondary); font-weight: 500; max-width: 200px; }
+        .inv-chart-amt { color: var(--text-primary); font-weight: 700; font-size: 12px; }
+        .inv-bar-track { height: 10px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; position: relative; }
+        .inv-bar-fill { height: 100%; border-radius: 10px; transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+        .bar-capacity { background: rgba(99,102,241,0.35); }
+        .bar-invested { background: linear-gradient(90deg, #10b981, #059669); }
+        .bar-rebate { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .bar-remaining { background: rgba(239,68,68,0.3); }
+        .chart-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+        /* Investment categories */
+        .inv-cat-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .inv-cat-item { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 10px 12px; }
+        .inv-cat-left { display: flex; flex-direction: column; gap: 2px; }
+        .inv-cat-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .inv-cat-desc { font-size: 11px; color: var(--text-muted); }
+        .inv-cat-limit { font-size: 10px; color: var(--accent-amber); font-weight: 600; }
+        .inv-cat-input { width: 130px; }
+
+        /* Summary strip redesigned */
+        .income-summary-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px; }
+        .isb-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 10px; text-align: center; }
+        .isb-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+        .isb-value { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+        .isb-value.green { color: var(--accent-green); }
+        .isb-value.amber { color: var(--accent-amber); }
+
+        /* Step visualization */
+        .steps-visual { display: flex; flex-direction: column; gap: 0; }
+        .step-item { display: flex; gap: 14px; align-items: flex-start; }
+        .step-line-col { display: flex; flex-direction: column; align-items: center; }
+        .step-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+        .step-connector { width: 2px; flex: 1; min-height: 20px; background: var(--border); margin: 3px 0; }
+        .step-body { flex: 1; padding-bottom: 16px; }
+        .step-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+        .step-detail { font-size: 12px; color: var(--text-muted); }
+        .step-amount { font-size: 14px; font-weight: 700; float: right; margin-top: -2px; }
+        .step-c1 { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+        .step-c2 { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+        .step-c3 { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+        .step-c4 { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+        .step-c5 { background: rgba(16,185,129,0.25); color: #fff; }
+
+        /* Filing badge */
+        .filing-badge { display: inline-flex; align-items: center; justify-content: center; margin: 10px auto 0; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; animation: fadeSlideIn 0.4s ease; }
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .filing-bonus { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); color: var(--accent-green); }
+        .filing-penalty { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: var(--accent-red); }
+        
+        /* Opportunity Dashboard */
+        .opp-dashboard { 
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); 
+            border: 1px solid rgba(99, 102, 241, 0.3); 
+            border-radius: 16px; 
+            padding: 24px; 
+            margin-top: 16px;
+            margin-bottom: 16px; 
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .opp-dashboard::before { 
+            content: ''; 
+            position: absolute; 
+            top: -50px; 
+            right: -50px; 
+            width: 150px; 
+            height: 150px; 
+            background: radial-gradient(circle, rgba(99,102,241,0.4) 0%, rgba(99,102,241,0) 70%); 
+            border-radius: 50%; 
+            z-index: 0;
+            pointer-events: none;
+        }
+        .opp-dashboard::after {
+            content: ''; 
+            position: absolute; 
+            bottom: -50px; 
+            left: -50px; 
+            width: 100px; 
+            height: 100px; 
+            background: radial-gradient(circle, rgba(16,185,129,0.3) 0%, rgba(16,185,129,0) 70%); 
+            border-radius: 50%; 
+            z-index: 0;
+            pointer-events: none;
+        }
+        .opp-header, .opp-grid, .opp-banner { position: relative; z-index: 1; }
+        .opp-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .opp-header-icon { 
+            display: flex; align-items: center; justify-content: center; 
+            width: 36px; height: 36px; 
+            border-radius: 10px; 
+            background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2)); 
+            color: #a5b4fc; 
+            border: 1px solid rgba(99,102,241,0.3);
+        }
+        .opp-title { font-size: 16px; font-weight: 800; color: #f8fafc; letter-spacing: 0.5px;}
+        .opp-subtitle { font-size: 12px; color: #94a3b8; font-weight: 500; }
+        .opp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .opp-card { 
+            background: rgba(255,255,255,0.03); 
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 12px; 
+            padding: 16px; 
+            transition: transform 0.2s, background 0.2s;
+        }
+        .opp-card:hover { background: rgba(255,255,255,0.05); transform: translateY(-2px); }
+        .opp-card-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;}
+        .opp-card-value { font-size: 22px; font-weight: 800; color: #f8fafc; margin-bottom: 4px; }
+        .opp-card-sub { font-size: 11px; color: #64748b; font-weight: 600;}
+        .opp-card.actionable { border-color: rgba(16,185,129,0.4); background: linear-gradient(180deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02)); box-shadow: inset 0 0 20px rgba(16,185,129,0.05); }
+        .opp-card.actionable .opp-card-value { color: #34d399; }
+        .opp-card.actionable .opp-card-label { color: #6ee7b7; }
+        .opp-card.actionable .opp-card-sub { color: #059669; }
+        .opp-banner { 
+            margin-top: 16px; 
+            padding: 14px 16px; 
+            background: rgba(245,158,11,0.1); 
+            border: 1px solid rgba(245,158,11,0.2);
+            border-left: 4px solid #f59e0b; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            color: #fcd34d; 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 12px; 
+            line-height: 1.5;
+        }
+        .opp-banner.success {
+            background: rgba(16,185,129,0.1);
+            border-color: rgba(16,185,129,0.2);
+            border-left-color: #10b981;
+            color: #6ee7b7;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
+        <div class="bg-blob blob-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="url(#logoGrad)"/>
+                        <path d="M8 22L12 10L16 18L20 13L24 22" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#065f46"/></linearGradient></defs>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-title">FinSource Tax</span>
+                    <span class="logo-subtitle">Bangladesh 2025-26</span>
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                <div class="header-badge"><span class="badge-dot"></span>NBR Compliant</div>
+                <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Developed By: Mohammad Rifat Anwar</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-tag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    আয়কর ক্যালকুলেটর ২০২৫-২৬ | FY 2025-26
+                </div>
+                <h1 class="hero-title">Income Tax Calculator</h1>
+                <p class="hero-subtitle">Enter your July & August–June salaries. The calculator auto-breaks down your salary components, computes employer TDS, and visualizes your investment rebate — step by step.</p>
+                <div class="hero-stats">
+                    <div class="stat"><span class="stat-value">6</span><span class="stat-label">Tax Slabs</span></div>
+                    <div class="stat-divider"></div>
+                    <div class="stat"><span class="stat-value">10%</span><span class="stat-label">Rebate Rate</span></div>
+                    <div class="stat-divider"></div>
+                    <div class="stat"><span class="stat-value">৳3.75L</span><span class="stat-label">Tax-Free Limit</span></div>
+                    <div class="stat-divider"></div>
+                    <div class="stat"><span class="stat-value">৳7.5L</span><span class="stat-label">Max Rebate Cap</span></div>
+                    <div class="stat-divider"></div>
+                    <div class="stat"><span class="stat-value">14</span><span class="stat-label">Investment Types</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Calculator -->
+    <main class="main-content">
+        <div class="container">
+            <div class="calculator-grid">
+
+                <!-- ═══ LEFT PANEL ═══ -->
+                <div class="panel panel-input">
+
+                    <!-- SECTION 1: Taxpayer Profile -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-icon icon-blue">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="section-title">Step 1 — Taxpayer Profile</h2>
+                                <p class="section-desc">Your category determines the tax-free income threshold</p>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="taxpayer-type" class="form-label">Taxpayer Category <span class="tooltip-icon" data-tooltip="Different categories get different tax-free thresholds">?</span></label>
+                                <div class="select-wrapper">
+                                    <select id="taxpayer-type" class="form-select" onchange="calculate()">
+                                        <option value="general">General Taxpayer — ৳3,75,000 free</option>
+                                        <option value="women_senior">Women / Senior (65+) — ৳4,25,000 free</option>
+                                        <option value="disabled">Person with Disability — ৳5,00,000 free</option>
+                                        <option value="third_gender">Third Gender — ৳5,00,000 free</option>
+                                        <option value="freedom_fighter">War-Wounded Freedom Fighter — ৳5,25,000 free</option>
+                                    </select>
+                                    <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Parent/Guardian of Disabled Child <span class="tooltip-icon" data-tooltip="+৳50,000 tax-free per disabled child">?</span></label>
+                                <div class="toggle-row">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="disabled-child" onchange="calculate()">
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                    <span class="toggle-label">+৳50,000 per disabled child</span>
+                                </div>
+                                <div class="child-count-row" id="child-count-row" style="display:none">
+                                    <label class="form-label-sm">Number of disabled children</label>
+                                    <div class="number-input-wrapper">
+                                        <button class="num-btn" onclick="changeChildCount(-1)">−</button>
+                                        <input type="number" id="disabled-child-count" value="1" min="1" max="10" class="num-input" onchange="calculate()">
+                                        <button class="num-btn" onclick="changeChildCount(1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="area-type" class="form-label">Residential Area <span class="tooltip-icon" data-tooltip="Determines your minimum tax">?</span></label>
+                                <div class="select-wrapper">
+                                    <select id="area-type" class="form-select" onchange="calculate()">
+                                        <option value="dhaka_ctg">Dhaka N/S or Chattogram City Corp. — Min ৳5,000</option>
+                                        <option value="other_city">Other City Corporations — Min ৳4,000</option>
+                                        <option value="outside_city">Outside City Corp. (Municipality/Thana) — Min ৳3,000</option>
+                                    </select>
+                                    <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="filing-quarter" class="form-label">When will you file your Return? <span class="tooltip-icon" data-tooltip="July–Sep: 5% rebate on net tax (max ৳25,000). Jan–Mar: +2% surcharge. Apr–Jun: +5% surcharge.">?</span></label>
+                                <div class="select-wrapper">
+                                    <select id="filing-quarter" class="form-select" onchange="calculate()">
+                                        <option value="q1">🎉 July – September (Early Filing: 5% rebate, max ৳25,000)</option>
+                                        <option value="q2" selected>✅ October – December (Standard — no change)</option>
+                                        <option value="q3">⚠️ January – March (Late: +2% surcharge, min ৳3,000)</option>
+                                        <option value="q4">🚨 April – June (Very Late: +5% surcharge, min ৳5,000)</option>
+                                    </select>
+                                    <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: Monthly Salary -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-icon icon-green">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="section-title">Step 2 — Monthly Salary</h2>
+                                <p class="section-desc">July is pre-increment (lower). August–June is post-increment (higher). Components are auto-calculated: Basic 60% · HRA 30% · Medical 6% · Conveyance 4%</p>
+                            </div>
+                        </div>
+
+                        <div class="month-salary-grid">
+                            <div class="month-card july-card">
+                                <div class="month-card-label">🟡 July (Month 1)</div>
+                                <div class="month-card-sub">Pre-increment salary — 1 month</div>
+                                <label class="form-label" style="font-size:11px">Gross Monthly Salary (৳)</label>
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">৳</span>
+                                    <input type="number" id="july-gross" class="form-input" placeholder="e.g. 45000" min="0" oninput="calculate()" onchange="calculate()">
+                                </div>
+                            </div>
+                            <div class="month-card aug-card">
+                                <div class="month-card-label">🟢 Aug – June (Months 2–12)</div>
+                                <div class="month-card-sub">Post-increment salary — 11 months</div>
+                                <label class="form-label" style="font-size:11px">Gross Monthly Salary (৳)</label>
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">৳</span>
+                                    <input type="number" id="aug-gross" class="form-input" placeholder="e.g. 50000" min="0" oninput="calculate()" onchange="calculate()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width" style="margin-bottom:10px">
+                            <label for="festival-bonus-months" class="form-label">Bonuses <span class="tooltip-icon" data-tooltip="Festival bonuses and performance bonuses">?</span></label>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                                <div>
+                                    <label class="form-label-sm">Total Festival Bonus (৳)</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">৳</span>
+                                        <input type="number" id="festival-bonus-amt" class="form-input" placeholder="Auto (2 × 60% of Aug)" readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed;font-weight:600">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label-sm">Total Performance Bonus (৳)</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">৳</span>
+                                        <input type="number" id="perf-bonus-amt" class="form-input" placeholder="Auto (2 × 20% of Aug)" readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed;font-weight:600">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Other Income -->
+                        <div class="form-group full-width">
+                            <label for="other-income" class="form-label">Other Annual Income (Business / Rent / Interest / Others) <span class="tooltip-icon" data-tooltip="All non-salary income: rent, business profits, bank interest, dividends etc.">?</span></label>
+                            <div class="input-wrapper">
+                                <span class="input-prefix">৳</span>
+                                <input type="number" id="other-income" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()">
+                            </div>
+                        </div>
+
+                        <!-- Provident Fund Summary -->
+                        <div class="pf-summary-box">
+                            <div class="pf-title">Provident Fund (Employee Share Only)</div>
+                            <div class="pf-grid">
+                                <div class="pf-item">Your Annual PF Contribution (6%)<strong id="pf-employee">৳0</strong></div>
+                                <div class="pf-item" style="color:var(--accent-green)">✅ Rebate eligible (employee share)<strong id="pf-rebate-eligible" style="color:var(--accent-green)">৳0</strong></div>
+                            </div>
+                        </div>
+
+                        <!-- Breakdown UI removed per FinSource rules -->
+
+                        <!-- Income Summary -->
+                        <div class="income-summary-box" style="margin-top:14px">
+                            <div class="isb-item">
+                                <div class="isb-label">Annual Gross</div>
+                                <div class="isb-value" id="strip-gross">৳0</div>
+                            </div>
+                            <div class="isb-item">
+                                <div class="isb-label">Exempt Allowance</div>
+                                <div class="isb-value green" id="strip-exempt">৳0</div>
+                            </div>
+                            <div class="isb-item">
+                                <div class="isb-label">Taxable Income</div>
+                                <div class="isb-value amber" id="strip-taxable">৳0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: Investments -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-icon icon-purple">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="section-title">Step 3 — Investment & Rebate</h2>
+                                <p class="section-desc">All NBR-approved investment categories (Section 78). Rebate = 10% of admissible = min(3% of taxable income, actual×10%, ৳7,50,000)</p>
+                            </div>
+                        </div>
+
+                        <div class="inv-cat-grid">
+
+                            <!-- 1 Life Insurance -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🛡️ Life Insurance Premium</div>
+                                    <div class="inv-cat-desc">Self, spouse, or minor children — max 10% of sum assured</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-life-insurance" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 2 Provident Fund (auto-filled) -->
+                            <div class="inv-cat-item" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.05)">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🏦 Recognized Provident Fund (RPF)</div>
+                                    <div class="inv-cat-desc">Employee's share only — auto-filled from your salary above</div>
+                                    <div class="inv-cat-limit">Auto-calculated from 6% of total salary</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-provident-fund" class="form-input" placeholder="auto" min="0" oninput="calculate()" onchange="calculate()" style="background:rgba(99,102,241,0.08)"></div>
+                            </div>
+
+                            <!-- 3 GPF -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🏛️ Government Provident Fund (GPF)</div>
+                                    <div class="inv-cat-desc">Only for government employees — contributions to GPF</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-gpf" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 4 Superannuation -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🎯 Superannuation Fund</div>
+                                    <div class="inv-cat-desc">Annual contribution to approved superannuation fund</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-superannuation" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 5 Benevolent Fund -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🤝 Benevolent Fund & Group Insurance</div>
+                                    <div class="inv-cat-desc">Contributions to employee welfare / group life insurance scheme</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-benevolent" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 6 Sanchayapatra -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">📜 Sanchayapatra / Govt. Securities</div>
+                                    <div class="inv-cat-desc">Bangladesh Sanchayapatra, Treasury bonds, T-bills</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-sanchaypatra" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 7 DPS -->
+                            <div class="inv-cat-item" style="border-color:rgba(16,185,129,0.25)">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">💰 DPS — Deposit Pension Scheme</div>
+                                    <div class="inv-cat-desc">Monthly savings with a scheduled bank or NBFI</div>
+                                    <div class="inv-cat-limit">⚠ Annual limit: ৳1,20,000 (excess is ignored)</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-dps" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 8 Listed Shares -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">📈 Listed Shares (DSE / CSE)</div>
+                                    <div class="inv-cat-desc">Stocks of companies listed on Dhaka or Chittagong Stock Exchange</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-shares" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 9 Mutual Funds -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">📊 Mutual Funds / Unit Funds (listed)</div>
+                                    <div class="inv-cat-desc">BSE-listed mutual funds, ETFs, closed-end funds, debentures</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-mutual" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 10 Universal Pension -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🏅 Universal Pension Scheme (সর্বজনীন)</div>
+                                    <div class="inv-cat-desc">Government's universal pension — Pragati, Suroksha, Samata, Probashi schemes</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-pension" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 11 Approved Hospitals -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🏥 Donation — Approved Charitable Hospitals</div>
+                                    <div class="inv-cat-desc">NBR-approved hospitals (outside city corp.), icddr,b, Ahsania Cancer Hospital, Aga Khan</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-charity-hospital" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 12 Disabled welfare -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">♿ Donation — Welfare of Disabled Persons</div>
+                                    <div class="inv-cat-desc">Organizations working for welfare of persons with disability</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-disability" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 13 Freedom fighter/liberation -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🏳️ Donation — Liberation War Museum / Father of Nation</div>
+                                    <div class="inv-cat-desc">Muktijuddho Museum, institutions preserving the memory of Bangabandhu</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-liberation" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                            <!-- 14 Zakat -->
+                            <div class="inv-cat-item">
+                                <div class="inv-cat-left">
+                                    <div class="inv-cat-name">🕌 Zakat Fund / Approved Charity</div>
+                                    <div class="inv-cat-desc">Contributions to Zakat Fund (Zakat Fund Management Act 2023) and approved educational/social welfare institutions</div>
+                                </div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-zakat" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
+                            </div>
+
+                        </div>
+
+                        <!-- Investment Capacity Bar -->
+                        <div class="investment-limit-bar" id="invest-limit-bar" style="margin-top:14px">
+                            <div class="limit-header">
+                                <span>Investment Rebate Capacity</span>
+                                <span id="invest-limit-display" style="font-size:11px">Admissible = min(3% of income · 10% of investment · ৳7,50,000)</span>
+                            </div>
+                            <div class="limit-progress-track">
+                                <div class="limit-progress-fill" id="invest-progress" style="width: 0%"></div>
+                            </div>
+                            <div class="limit-details">
+                                <span>Total Invested: <strong id="total-invested">৳0</strong></span>
+                                <span>Max Rebate: <strong id="admissible-invest">৳0</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calculate Button -->
+                    <button class="calc-btn" onclick="calculate()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/></svg>
+                        Calculate My Tax
+                    </button>
+                </div>
+
+                <!-- ═══ RIGHT PANEL ═══ -->
+                <div class="panel panel-results" id="results-panel">
+
+                    <!-- Result Hero -->
+                    <div class="result-hero-card">
+                        <div class="result-hero-header">
+                            <span class="result-tag">FY 2025-26 Result</span>
+                            <span class="result-nbr">NBR Compliant</span>
+                        </div>
+                        <div class="result-main">
+                            <div class="result-main-label">Final Tax Payable By You (Annual)</div>
+                            <div class="result-main-value" id="final-payable-display">৳0</div>
+                            <div class="result-main-sub" id="net-tax-monthly" style="color:var(--accent-green);font-weight:700">Office Pays: ৳0 (Tax on Basic)</div>
+                            <div id="filing-quarter-result" class="filing-badge" style="display:none"></div>
+                        </div>
+                        <div class="result-cards-row">
+                            <div class="result-mini-card">
+                                <div class="mini-label">Gross Tax</div>
+                                <div class="mini-value" id="gross-tax-display">৳0</div>
+                            </div>
+                            <div class="result-mini-card green-card">
+                                <div class="mini-label">Total Rebate</div>
+                                <div class="mini-value green" id="rebate-display">৳0</div>
+                            </div>
+                            <div class="result-mini-card">
+                                <div class="mini-label">Total Net Tax</div>
+                                <div class="mini-value" id="net-tax-display">৳0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Investment Opportunity Dashboard -->
+                    <div id="opp-dashboard-container"></div>
+
+
+
+
+                    <!-- Step-by-Step Tax Visualization -->
+                    <div class="section-card">
+                        <div class="section-header-sm">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                            Step-by-Step Tax Calculation
+                        </div>
+                        <div class="steps-visual" id="steps-visual">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Slab Breakdown -->
+                    <div class="section-card">
+                        <div class="section-header-sm">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            Tax Slab Breakdown
+                        </div>
+                        <div class="slab-table" id="slab-table"></div>
+                    </div>
+
+                    <!-- Office Slab Breakdown -->
+                    <div class="section-card" id="office-slab-container" style="display:none; border-color: rgba(16,185,129,0.3);">
+                        <div class="section-header-sm" style="color:var(--accent-green)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            Office Paid Tax Slab (Tax on Basic)
+                        </div>
+                        <div class="slab-table" id="office-slab-table"></div>
+                    </div>
+
+                    <!-- Investment Capacity Chart -->
+                    <div class="section-card">
+                        <div class="section-header-sm">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            Investment Capacity Chart
+                        </div>
+                        <div class="inv-chart" id="inv-chart">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item"><div class="legend-dot" style="background:#6366f1;opacity:0.6"></div>Max capacity (3% of income)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Your investment</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Rebate earned</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:rgba(239,68,68,0.4)"></div>Remaining capacity</div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Full Computation Table -->
+                    <div class="section-card">
+                        <div class="section-header-sm">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            Full Income & Tax Computation
+                        </div>
+                        <div class="computation-table" id="computation-table"></div>
+                    </div>
+
+                    <!-- Min Tax Warning -->
+                    <div class="min-tax-card" id="min-tax-card" style="display:none">
+                        <div class="min-tax-icon">⚠</div>
+                        <div class="min-tax-text">
+                            <strong>Minimum Tax Applied</strong>
+                            <span id="min-tax-reason">Calculated tax is below minimum tax</span>
+                        </div>
+                    </div>
+
+                    <!-- Tax Saving Tips -->
+                    <div class="tips-card" id="tips-card">
+                        <div class="tips-header">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            Smart Tax Saving Tips
+                        </div>
+                        <ul class="tips-list" id="tips-list"></ul>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-row">
+                        <button class="action-btn btn-print" onclick="printReport()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            Print / PDF Report
+                        </button>
+                        <button class="action-btn btn-reset" onclick="resetForm()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+                            Reset All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reference Table -->
+            <div class="reference-section">
+                <h2 class="ref-title">FY 2025-26 Tax Rules Reference (NBR Bangladesh)</h2>
+                <div class="ref-grid">
+                    <div class="ref-card">
+                        <h3 class="ref-card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>Income Tax Slabs</h3>
+                        <table class="ref-table">
+                            <thead><tr><th>Taxable Income (BDT)</th><th>Rate</th></tr></thead>
+                            <tbody>
+                                <tr><td>First ৳3,75,000</td><td class="rate-0">0%</td></tr>
+                                <tr><td>Next ৳3,00,000</td><td class="rate-10">10%</td></tr>
+                                <tr><td>Next ৳4,00,000</td><td class="rate-15">15%</td></tr>
+                                <tr><td>Next ৳5,00,000</td><td class="rate-20">20%</td></tr>
+                                <tr><td>Next ৳20,00,000</td><td class="rate-25">25%</td></tr>
+                                <tr><td>Balance</td><td class="rate-30">30%</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="ref-card">
+                        <h3 class="ref-card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Tax-Free Thresholds</h3>
+                        <table class="ref-table">
+                            <thead><tr><th>Category</th><th>Limit (BDT)</th></tr></thead>
+                            <tbody>
+                                <tr><td>General</td><td class="amount-col">৳3,75,000</td></tr>
+                                <tr><td>Women / Senior (65+)</td><td class="amount-col">৳4,25,000</td></tr>
+                                <tr><td>Person with Disability</td><td class="amount-col">৳5,00,000</td></tr>
+                                <tr><td>Third Gender</td><td class="amount-col">৳5,00,000</td></tr>
+                                <tr><td>Freedom Fighter</td><td class="amount-col">৳5,25,000</td></tr>
+                                <tr><td>+Each Disabled Child</td><td class="amount-col">+৳50,000</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="ref-card">
+                        <h3 class="ref-card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Salary Breakdown & Rebate Rules</h3>
+                        <div class="ref-rules">
+                            <div class="rule-item"><span class="rule-bullet">①</span><span>Basic = 60% · HRA = 30% · Medical = 6% · Conveyance = 4% of Gross</span></div>
+                            <div class="rule-item"><span class="rule-bullet">②</span><span>Allowance exemption = min(৳4,50,000, 1/3 of Annual Basic)</span></div>
+                            <div class="rule-item"><span class="rule-bullet">③</span><span>PF: Employee 6% of basic + Office 6% of basic (employee share → rebate eligible)</span></div>
+                            <div class="rule-item"><span class="rule-bullet">④</span><span>Rebate = 10% of admissible investment <strong style="color:var(--accent-green)">(updated from 15%)</strong></span></div>
+                            <div class="rule-item"><span class="rule-bullet">⑤</span><span>Admissible = min(3% of taxable income, actual×10%, ৳7,50,000)</span></div>
+                            <div class="rule-item" style="color:var(--accent-green)"><span class="rule-bullet">⑥</span><span><strong>NEW:</strong> File Jul–Sep → 5% rebate on net tax (max ৳25,000)</span></div>
+                            <div class="rule-item" style="color:var(--accent-amber)"><span class="rule-bullet">⑦</span><span><strong>NEW:</strong> File Jan–Mar → +2% surcharge (min ৳3,000)</span></div>
+                            <div class="rule-item" style="color:var(--accent-red)"><span class="rule-bullet">⑧</span><span><strong>NEW:</strong> File Apr–Jun → +5% surcharge (min ৳5,000)</span></div>
+                        </div>
+                    </div>
+                    <div class="ref-card">
+                        <h3 class="ref-card-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Minimum Tax & Filing</h3>
+                        <table class="ref-table">
+                            <thead><tr><th>Area</th><th>Min. Tax</th></tr></thead>
+                            <tbody>
+                                <tr><td>Dhaka N/S & Chattogram CC</td><td class="amount-col">৳5,000</td></tr>
+                                <tr><td>Other City Corporations</td><td class="amount-col">৳4,000</td></tr>
+                                <tr><td>Outside City Corp.</td><td class="amount-col">৳3,000</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="ref-note">DPS annual limit: ৳1,20,000 | e-Return: etaxnbr.gov.bd | Helpline: 09643717171</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <span class="footer-logo">FinSource Tax Calculator</span>
+                    <span class="footer-year">FY 2025-26</span>
+                </div>
+                <p class="footer-disclaimer">Based on NBR Income Tax Act 2023 & Finance Act 2025. Rules updated per Prothom Alo, Financial Express, PwC & KPMG reports. For official filing consult a tax advisor or visit <a href="https://nbr.gov.bd" target="_blank">nbr.gov.bd</a>.</p>
+                <div class="footer-links">
+                    <a href="https://etaxnbr.gov.bd" target="_blank">e-Return Portal</a>
+                    <a href="https://nbr.gov.bd/taxtypes/income-tax/income-tax-paripatra/eng" target="_blank">Tax Paripatra</a>
+                    <a href="https://nbr.gov.bd" target="_blank">NBR Bangladesh</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="calculator.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

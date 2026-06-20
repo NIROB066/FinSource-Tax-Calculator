@@ -1,0 +1,24 @@
+See the attached excel file to get idea how the tax calculation will work this year.
+We should add one missing thing that how FinSource will give tax in behalf of us.
+Office will give the tax on our Basic Salary
+    Basic salary - Main salary * 60%
+    House Rent - Main salary * 30%
+    Medical - Main salary * 6%
+    Convenience - Main salary * 4%
+We must calculate how much tax the office will give by proper slab.
+Office offers a provident fund
+    Employee contribution 6%
+    Office Contricution 6%
+We will have the tax rebate on our contribution.
+
+You must google to find out how the tax slab will work this this and how the rebate will calculate.
+The screen should  be very much user friendly interface will details instruction to input values
+We have an increment of salary in august.
+so, 1st month july and rest of tax year salary will be different.
+The tax rebate section will also visualize properly.
+The tax calculation process should be visualize in the UI properly so that we can understand step by step.
+Interface should not be same like excel.
+
+
+I want a portable app version (Windows, android and if possible MAC)
+    Users will click the app and it won't require system permissions to install it

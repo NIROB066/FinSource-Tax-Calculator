@@ -1,0 +1,16 @@
+# Node.js
+node_modules/
+npm-debug.log
+
+# Build Outputs
+dist/
+www/
+android/
+Portable_Apps_Export/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

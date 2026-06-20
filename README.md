@@ -11,17 +11,13 @@
 [![NBR](https://img.shields.io/badge/NBR-Compliant-f59e0b?style=flat-square)](https://nbr.gov.bd)
 [![License](https://img.shields.io/badge/license-MIT-94a3b8?style=flat-square)](LICENSE)
 
-**[⬇ Smart Download](https://nirob066.github.io/FinSource-Tax-Calculator/)** &nbsp;·&nbsp; [📖 Docs](#-features) &nbsp;·&nbsp; [🐛 Issues](https://github.com/NIROB066/FinSource-Tax-Calculator/issues)
+[📖 Docs](#-features) &nbsp;·&nbsp; [🐛 Issues](https://github.com/NIROB066/FinSource-Tax-Calculator/issues)
 
 ---
 
 </div>
 
 ## ⬇ Download
-
-> **[→ Click here for a smart download page that detects your device automatically](https://nirob066.github.io/FinSource-Tax-Calculator/)**
-
-Or pick your platform manually:
 
 | Platform | Download | Notes |
 |---|---|---|

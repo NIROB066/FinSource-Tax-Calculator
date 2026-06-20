@@ -200,6 +200,48 @@
             border-left-color: #10b981;
             color: #6ee7b7;
         }
+
+        /* ── Month picker ── */
+        .month-picker-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px 12px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); border-radius: var(--radius-sm); flex-wrap: wrap; }
+        .month-picker-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+        .month-picker-row .select-wrapper { flex: 1; min-width: 180px; max-width: 280px; }
+
+        /* ── Print overlay ── */
+        #print-overlay { display: none; }
+        @media print {
+            body > *:not(#print-overlay) { display: none !important; }
+            #print-overlay {
+                display: block !important;
+                position: fixed; inset: 0;
+                background: #fff; color: #111;
+                padding: 28px; font-family: 'Inter', sans-serif;
+                z-index: 9999; overflow: auto; font-size: 13px;
+            }
+            #print-overlay .pr-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px; padding-bottom:16px; border-bottom:3px solid #10b981; }
+            #print-overlay h1 { font-size:20px; font-weight:800; color:#111; }
+            #print-overlay .pr-badge { display:inline-block; padding:2px 10px; background:#d1fae5; color:#065f46; border-radius:20px; font-size:11px; font-weight:700; margin-top:4px; }
+            #print-overlay .pr-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:22px; }
+            #print-overlay .pr-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; }
+            #print-overlay .pr-box.hl { background:#f0fdf4; border-color:#86efac; }
+            #print-overlay .pr-lbl { font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; }
+            #print-overlay .pr-val { font-size:17px; font-weight:800; color:#111; }
+            #print-overlay .pr-val.g { color:#059669; }
+            #print-overlay .pr-val.a { color:#d97706; }
+            #print-overlay h2 { font-size:13px; font-weight:700; color:#334155; margin:18px 0 8px; padding-bottom:5px; border-bottom:1px solid #e2e8f0; }
+            #print-overlay .comp-row { display:flex; justify-content:space-between; padding:6px 10px; font-size:12px; border-bottom:1px solid #f1f5f9; }
+            #print-overlay .comp-row.header { background:#f1f5f9; font-weight:800; font-size:10px; text-transform:uppercase; color:#64748b; }
+            #print-overlay .comp-row.total { background:#f0fdf4; border:1px solid #86efac; border-radius:5px; font-weight:800; color:#065f46; margin-top:5px; }
+            #print-overlay .comp-row.subtotal { font-weight:700; color:#d97706; }
+            #print-overlay .comp-row.deduction { color:#059669; }
+            #print-overlay .comp-row.indent { padding-left:20px; }
+            #print-overlay .comp-row.surcharge { color:#ef4444; font-weight:600; }
+            #print-overlay .slab-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:6px 10px; font-size:11px; border-bottom:1px solid #f1f5f9; }
+            #print-overlay .slab-row.active { background:#f0fdf4; }
+            #print-overlay .slab-row-header { font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; background:#f1f5f9; }
+            #print-overlay .slab-rate { text-align:right; font-weight:700; color:#d97706; }
+            #print-overlay .slab-tax-amount, #print-overlay .slab-applicable { text-align:right; }
+            #print-overlay .pr-footer { margin-top:24px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:11px; color:#94a3b8; text-align:center; }
+        }
     </style>
 </head>
 <body>
@@ -360,7 +402,7 @@
                             </div>
                             <div class="month-card aug-card">
                                 <div class="month-card-label">🟢 Aug – June (Months 2–12)</div>
-                                <div class="month-card-sub">Post-increment salary — 11 months</div>
+                                <div class="month-card-sub">Post-increment salary — <span id="aug-months-label">11</span> months</div>
                                 <label class="form-label" style="font-size:11px">Gross Monthly Salary (৳)</label>
                                 <div class="input-wrapper">
                                     <span class="input-prefix">৳</span>
@@ -369,21 +411,60 @@
                             </div>
                         </div>
 
+                        <!-- Aug-June Month Count Picker -->
+                        <div class="month-picker-row">
+                            <span class="month-picker-label">📅 Aug–June months in service:</span>
+                            <div class="select-wrapper">
+                                <select id="aug-months" class="form-select" onchange="calculate()">
+                                    <option value="1">1 month &nbsp;(Joined June)</option>
+                                    <option value="2">2 months (Joined May)</option>
+                                    <option value="3">3 months (Joined April)</option>
+                                    <option value="4">4 months (Joined March)</option>
+                                    <option value="5">5 months (Joined February)</option>
+                                    <option value="6">6 months (Joined January)</option>
+                                    <option value="7">7 months (Joined December)</option>
+                                    <option value="8">8 months (Joined November)</option>
+                                    <option value="9">9 months (Joined October)</option>
+                                    <option value="10">10 months (Joined September)</option>
+                                    <option value="11" selected>11 months — Full year (Aug–June)</option>
+                                </select>
+                                <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                        </div>
+
                         <div class="form-group full-width" style="margin-bottom:10px">
-                            <label for="festival-bonus-months" class="form-label">Bonuses <span class="tooltip-icon" data-tooltip="Festival bonuses and performance bonuses">?</span></label>
+                            <label class="form-label">Bonuses <span class="tooltip-icon" data-tooltip="Festival bonuses = 60% of Aug basic × count. Performance bonuses = 20% of Aug basic × count.">?</span></label>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                                 <div>
+                                    <label class="form-label-sm">Festival Bonus count</label>
+                                    <div class="select-wrapper" style="margin-bottom:6px">
+                                        <select id="festival-bonus-count" class="form-select" onchange="calculate()">
+                                            <option value="0">0 — No festival bonus</option>
+                                            <option value="1">1 bonus</option>
+                                            <option value="2" selected>2 bonuses (default)</option>
+                                        </select>
+                                        <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </div>
                                     <label class="form-label-sm">Total Festival Bonus (৳)</label>
                                     <div class="input-wrapper">
                                         <span class="input-prefix">৳</span>
-                                        <input type="number" id="festival-bonus-amt" class="form-input" placeholder="Auto (2 × 60% of Aug)" readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed;font-weight:600">
+                                        <input type="number" id="festival-bonus-amt" class="form-input" placeholder="Auto" readonly style="background:rgba(255,255,255,0.04);color:var(--text-secondary);cursor:not-allowed;font-weight:600">
                                     </div>
                                 </div>
                                 <div>
+                                    <label class="form-label-sm">Performance Bonus count</label>
+                                    <div class="select-wrapper" style="margin-bottom:6px">
+                                        <select id="perf-bonus-count" class="form-select" onchange="calculate()">
+                                            <option value="0">0 — No performance bonus</option>
+                                            <option value="1">1 bonus</option>
+                                            <option value="2" selected>2 bonuses (default)</option>
+                                        </select>
+                                        <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </div>
                                     <label class="form-label-sm">Total Performance Bonus (৳)</label>
                                     <div class="input-wrapper">
                                         <span class="input-prefix">৳</span>
-                                        <input type="number" id="perf-bonus-amt" class="form-input" placeholder="Auto (2 × 20% of Aug)" readonly style="background:#f1f5f9;color:#64748b;cursor:not-allowed;font-weight:600">
+                                        <input type="number" id="perf-bonus-amt" class="form-input" placeholder="Auto" readonly style="background:rgba(255,255,255,0.04);color:var(--text-secondary);cursor:not-allowed;font-weight:600">
                                     </div>
                                 </div>
                             </div>
@@ -799,6 +880,8 @@
         </div>
     </footer>
 
+    <!-- Print Report Overlay -->
+    <div id="print-overlay"></div>
     <script src="calculator.js"></script>
     <script>
         if ('serviceWorker' in navigator) {

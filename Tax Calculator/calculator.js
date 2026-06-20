@@ -148,11 +148,18 @@ function calculate() {
 
     const julyGross = getVal('july-gross');
     const augGross  = getVal('aug-gross');
+    const augMonths = parseInt(document.getElementById('aug-months')?.value) || 11;
 
-    // Auto-calculate bonuses (FinSource Policy: based on Aug-Jun salary)
-    const festivalBonusAmt = Math.round(augGross * 0.60 * 2);
-    const perfBonusAmt     = Math.round(augGross * 0.20 * 2);
-    
+    // Update Aug card subtitle dynamically
+    const augLbl = document.getElementById('aug-months-label');
+    if (augLbl) augLbl.textContent = augMonths;
+
+    // Auto-calculate bonuses based on count selector (0-2, default 2)
+    const festivalBonusCount = parseInt(document.getElementById('festival-bonus-count')?.value ?? '2') || 0;
+    const perfBonusCount     = parseInt(document.getElementById('perf-bonus-count')?.value ?? '2') || 0;
+    const festivalBonusAmt = Math.round(augGross * 0.60 * festivalBonusCount);
+    const perfBonusAmt     = Math.round(augGross * 0.20 * perfBonusCount);
+
     // Display them in the readonly fields
     const festEl = document.getElementById('festival-bonus-amt');
     if(festEl) festEl.value = festivalBonusAmt || '';
@@ -163,11 +170,11 @@ function calculate() {
     const C = TAX_CONFIG;
     
     // Total Salary (No breakdown counted for total)
-    const totalSalary = julyGross + (augGross * 11);
+    const totalSalary = julyGross + (augGross * augMonths);
     const annGrossSalary = totalSalary + festivalBonusAmt + perfBonusAmt;
     
     // Basic is only used to calculate Office Paid Tax and PF
-    const annBasic = Math.round(julyGross * C.SALARY_BASIC_PCT) + Math.round(augGross * C.SALARY_BASIC_PCT) * 11;
+    const annBasic = Math.round(julyGross * C.SALARY_BASIC_PCT) + Math.round(augGross * C.SALARY_BASIC_PCT) * augMonths;
 
     // ── 3. Provident Fund (NOT added to Gross Income) ──
     const annPFEmployee = Math.round(totalSalary * C.PF_EMPLOYEE_PCT);
@@ -274,7 +281,7 @@ function calculate() {
         grossIncome, allowanceExemption, taxableIncome,
         taxFreeLimit, grossTax, investRebate, admissibleRebate,
         threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge,
-        netTax, officePaidTax, finalPayable, qConfig, salaryThird
+        netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths
     });
 
     updateSlabTable('slab-table', slabDetails, taxableIncome, 'Total Gross Tax');
@@ -449,12 +456,12 @@ function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebat
 }
 
 
-function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge, netTax, officePaidTax, finalPayable, qConfig, salaryThird }) {
+function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge, netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths = 11 }) {
     const container = document.getElementById('steps-visual');
     if (!container) return;
 
     const steps = [
-        { n: 1, cls: 'step-c1', title: 'Annual Gross Income', detail: 'July salary (×1) + Aug–June salary (×11) + Bonuses + Other Income', amount: grossIncome },
+        { n: 1, cls: 'step-c1', title: 'Annual Gross Income', detail: `July salary (×1) + Aug–June salary (×${augMonths}) + Bonuses + Other Income`, amount: grossIncome },
         { n: 2, cls: 'step-c2', title: '(−) Allowance Exemption', detail: `min(৳4,50,000 , 1/3 of Total Salary ৳${formatTaka(salaryThird)}) = ${formatTaka(allowanceExemption)}`, amount: -allowanceExemption, isDeduction: true },
         { n: 3, cls: 'step-c3', title: '= Taxable Income', detail: 'Gross Income − Allowance Exemption', amount: taxableIncome, isResult: true },
         { n: 4, cls: 'step-c1', title: '(−) Tax-Free Threshold', detail: `Your category's tax-free limit`, amount: -taxFreeLimit, isDeduction: true },
@@ -691,60 +698,64 @@ function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate
 // ════════════════════════════════════════════════
 // PRINT
 // ════════════════════════════════════════════════
+// PRINT  (overlay + window.print — works on all devices)
+// ════════════════════════════════════════════════
 function printReport() {
     const now = new Date().toLocaleDateString('en-BD', { day:'numeric', month:'long', year:'numeric' });
-    const netTax  = document.getElementById('final-payable-display').textContent;
-    const gross   = document.getElementById('strip-gross').textContent;
-    const taxable = document.getElementById('strip-taxable').textContent;
-    const rebate  = document.getElementById('rebate-display').textContent;
-    const rate    = document.getElementById('net-tax-display').textContent;
-    const compHTML = document.getElementById('computation-table').innerHTML;
-    const slabHTML = document.getElementById('slab-table').innerHTML;
-    const tdsHTML  = document.getElementById('tds-table').outerHTML;
-    const monthlyTDS = document.getElementById('tds-monthly-display').textContent;
+    const netTax    = document.getElementById('final-payable-display').textContent;
+    const gross     = document.getElementById('strip-gross').textContent;
+    const taxable   = document.getElementById('strip-taxable').textContent;
+    const rebate    = document.getElementById('rebate-display').textContent;
+    const totalNet  = document.getElementById('net-tax-display').textContent;
+    const officePay = document.getElementById('net-tax-monthly').textContent;
+    const compHTML  = document.getElementById('computation-table').innerHTML;
+    const slabHTML  = document.getElementById('slab-table').innerHTML;
 
-    const w = window.open('', '_blank', 'width=900,height=700');
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Bangladesh Tax Report FY 2025-26</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:#fff;color:#111;padding:40px;max-width:800px;margin:0 auto}
-    .hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:3px solid #10b981}
-    h1{font-size:22px;font-weight:800}p{font-size:13px;color:#555;margin-top:4px}.badge{display:inline-block;padding:3px 10px;background:#d1fae5;color:#065f46;border-radius:20px;font-size:11px;font-weight:700;margin-top:4px}
-    .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:28px}
-    .box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;text-align:center}
-    .box.hl{background:#f0fdf4;border-color:#86efac}.lbl{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px}
-    .val{font-size:18px;font-weight:800}.val.g{color:#059669}.val.a{color:#d97706}
-    h2{font-size:14px;font-weight:700;color:#334155;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;margin-top:20px}
-    .comp-row{display:flex;justify-content:space-between;padding:7px 10px;font-size:12.5px;border-bottom:1px solid #f1f5f9}
-    .comp-row.header{background:#f1f5f9;font-weight:800;font-size:10px;text-transform:uppercase;color:#64748b}
-    .comp-row.total{background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-weight:800;color:#065f46;margin-top:6px}
-    .comp-row.subtotal{font-weight:700;color:#d97706}.comp-row.deduction{color:#059669}.comp-row.indent{padding-left:22px}
-    .comp-row.surcharge{color:#ef4444;font-weight:600}
-    .slab-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;padding:7px 10px;font-size:11.5px;border-bottom:1px solid #f1f5f9}
-    .slab-row.active{background:#f0fdf4}.slab-row-header{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;background:#f1f5f9}
-    .slab-rate{text-align:right;font-weight:700;color:#d97706}.slab-tax-amount,.slab-applicable{text-align:right}
-    .tds-table{width:100%;border-collapse:collapse;font-size:12px}.tds-table th{padding:7px 10px;background:#f1f5f9;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:right}
-    .tds-table th:first-child{text-align:left}.tds-table td{padding:7px 10px;border-bottom:1px solid #f1f5f9;text-align:right}.tds-table td:first-child{text-align:left;font-weight:500}
-    .tds-table tfoot td{font-weight:700;background:#f0fdf4;color:#059669}
-    .footer{margin-top:32px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;line-height:1.6}
-    @media print{body{padding:20px}}</style></head><body>
-    <div class="hdr"><div><h1>Income Tax Computation Statement</h1><p>FinSource Tax Calculator — National Board of Revenue, Bangladesh</p><span class="badge">FY 2025-26 | NBR Compliant</span></div><div style="text-align:right;font-size:12px;color:#777"><p>Generated on:</p><p><strong>${now}</strong></p></div></div>
-    <div class="grid">
-        <div class="box"><div class="lbl">Gross Income</div><div class="val">${gross}</div></div>
-        <div class="box"><div class="lbl">Total Net Tax</div><div class="val a">${rate}</div></div>
-        <div class="box"><div class="lbl">Investment Rebate</div><div class="val g">${rebate}</div></div>
-        <div class="box hl"><div class="lbl">Final Payable By You</div><div class="val">${netTax}</div></div>
-    </div>
-    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px;margin-bottom:20px">
-        <strong style="color:#065f46">Monthly Tax Paid By Office: ${monthlyTDS}</strong> — The office calculates tax on your basic salary and pays it for you.
-    </div>
-    <h2>Income & Tax Computation</h2>${compHTML.replace(/class="comp-row/g,'class="comp-row')}
-    <h2>Tax Slab Breakdown</h2>${slabHTML}
-    <h2>Monthly TDS Schedule</h2>${tdsHTML}
-    <div class="footer"><p>This report is for reference purposes only. For official tax assessment, consult the NBR or a registered tax advisor.</p><p>Official e-Return portal: etaxnbr.gov.bd | NBR Helpline: 09643717171</p></div>
-    <button onclick="window.print()" style="margin:20px auto;display:block;padding:10px 28px;background:#10b981;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Print / Save as PDF</button>
-    </body></html>`);
-    w.document.close();
+    const overlay = document.getElementById('print-overlay');
+    if (!overlay) { window.print(); return; }
+
+    overlay.innerHTML = `
+        <div class="pr-hdr">
+            <div>
+                <h1>Income Tax Computation Statement</h1>
+                <p style="font-size:12px;color:#555;margin-top:3px">FinSource Tax Calculator — National Board of Revenue, Bangladesh</p>
+                <span class="pr-badge">FY 2025-26 | NBR Compliant</span>
+            </div>
+            <div style="text-align:right;font-size:12px;color:#777">
+                <p>Generated on:</p>
+                <p><strong>${now}</strong></p>
+            </div>
+        </div>
+        <div class="pr-grid">
+            <div class="pr-box"><div class="pr-lbl">Gross Income</div><div class="pr-val">${gross}</div></div>
+            <div class="pr-box"><div class="pr-lbl">Total Net Tax</div><div class="pr-val a">${totalNet}</div></div>
+            <div class="pr-box"><div class="pr-lbl">Investment Rebate</div><div class="pr-val g">${rebate}</div></div>
+            <div class="pr-box hl"><div class="pr-lbl">Final Payable By You</div><div class="pr-val">${netTax}</div></div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px">
+            <strong style="color:#065f46">${officePay}</strong>
+        </div>
+        <h2>Income &amp; Tax Computation</h2>
+        ${compHTML}
+        <h2>Tax Slab Breakdown</h2>
+        ${slabHTML}
+        <div class="pr-footer">
+            <p>This report is for reference purposes only. For official tax assessment, consult the NBR or a registered tax advisor.</p>
+            <p>Official e-Return portal: etaxnbr.gov.bd &nbsp;|&nbsp; NBR Helpline: 09643717171</p>
+        </div>
+    `;
+
+    overlay.style.display = 'block';
+
+    function cleanup() {
+        overlay.style.display = 'none';
+        overlay.innerHTML = '';
+        window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
+    window.print();
 }
+
 
 // ════════════════════════════════════════════════
 // RESET
@@ -754,6 +765,12 @@ function resetForm() {
     document.getElementById('taxpayer-type').value = 'general';
     document.getElementById('area-type').value     = 'dhaka_ctg';
     document.getElementById('filing-quarter').value= 'q2';
+    const augMonthsEl = document.getElementById('aug-months');
+    if (augMonthsEl) augMonthsEl.value = '11';
+    const festCountEl = document.getElementById('festival-bonus-count');
+    if (festCountEl) festCountEl.value = '2';
+    const perfCountEl = document.getElementById('perf-bonus-count');
+    if (perfCountEl) perfCountEl.value = '2';
     document.getElementById('disabled-child').checked = false;
     document.getElementById('child-count-row').style.display = 'none';
     document.getElementById('festival-bonus-amt').value = '';

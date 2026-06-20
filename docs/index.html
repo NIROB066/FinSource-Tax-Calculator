@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSource Tax Calculator — Download</title>
+    <meta name="description" content="Bangladesh Income Tax Calculator FY 2025-26. Download for Windows, macOS, or Android.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:       #0a0f1e;
+            --surface:  #111827;
+            --border:   rgba(255,255,255,0.08);
+            --green:    #10b981;
+            --green-dk: #059669;
+            --amber:    #f59e0b;
+            --purple:   #8b5cf6;
+            --blue:     #3b82f6;
+            --text:     #f8fafc;
+            --muted:    #94a3b8;
+            --radius:   14px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── Background blobs ── */
+        .bg {
+            position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+        }
+        .blob {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25;
+        }
+        .blob-1 { width: 500px; height: 500px; background: #10b981; top: -150px; right: -100px; }
+        .blob-2 { width: 400px; height: 400px; background: #6366f1; bottom: -100px; left: -100px; }
+
+        /* ── Layout ── */
+        .page { position: relative; z-index: 1; width: 100%; max-width: 700px; padding: 48px 24px 64px; }
+
+        /* ── Logo ── */
+        .logo-row {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 40px;
+        }
+        .logo-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            background: linear-gradient(135deg, #10b981, #065f46);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .logo-title { font-size: 22px; font-weight: 800; }
+        .logo-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+        /* ── Hero ── */
+        .hero { text-align: center; margin-bottom: 48px; }
+        .tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+            color: var(--green); border-radius: 20px; padding: 5px 14px;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 20px;
+        }
+        .hero h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 800; line-height: 1.2; margin-bottom: 14px; }
+        .hero h1 span { color: var(--green); }
+        .hero p { font-size: 16px; color: var(--muted); line-height: 1.6; max-width: 500px; margin: 0 auto; }
+
+        /* ── Primary download card ── */
+        .primary-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 20px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        .primary-card.detected { border-color: rgba(16,185,129,0.4); }
+
+        .detect-label {
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+        }
+        .detect-os {
+            font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 24px;
+        }
+        .detect-os span { color: var(--green); }
+
+        .dl-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; max-width: 380px;
+            padding: 16px 28px;
+            border-radius: 12px;
+            font-size: 16px; font-weight: 700;
+            text-decoration: none; color: #fff;
+            background: linear-gradient(135deg, var(--green), var(--green-dk));
+            border: none; cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+        }
+        .dl-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(16,185,129,0.4); }
+        .dl-btn:active { transform: translateY(0); }
+        .dl-btn svg { flex-shrink: 0; }
+
+        .dl-note {
+            font-size: 12px; color: var(--muted); margin-top: 12px; line-height: 1.5;
+        }
+
+        /* ── Other platforms ── */
+        .section-title {
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.8px;
+            margin-bottom: 12px;
+        }
+        .platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 40px; }
+
+        @media (max-width: 500px) { .platforms { grid-template-columns: 1fr; } }
+
+        .platform-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 16px;
+            text-decoration: none; color: var(--text);
+            display: flex; flex-direction: column; gap: 6px;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+        .platform-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        .platform-card.active-os { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.05); }
+
+        .pc-icon { font-size: 24px; margin-bottom: 4px; }
+        .pc-name { font-size: 13px; font-weight: 700; }
+        .pc-file { font-size: 11px; color: var(--muted); word-break: break-all; }
+
+        /* ── Features ── */
+        .features { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 40px; }
+        @media (max-width: 500px) { .features { grid-template-columns: 1fr; } }
+
+        .feat {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px 16px;
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .feat-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+        .feat-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+        .feat-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center; font-size: 12px; color: var(--muted); line-height: 1.8;
+            border-top: 1px solid var(--border); padding-top: 24px;
+        }
+        footer a { color: var(--green); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="page">
+
+        <!-- Logo -->
+        <div class="logo-row">
+            <div class="logo-icon">
+                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                    <path d="M8 22L12 10L16 18L20 13L24 22" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div>
+                <div class="logo-title">FinSource Tax</div>
+                <div class="logo-sub">Bangladesh FY 2025-26</div>
+            </div>
+        </div>
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="tag">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>
+                NBR Compliant · v1.0.1
+            </div>
+            <h1>Bangladesh Income Tax<br><span>Calculator 2025-26</span></h1>
+            <p>Step-by-step tax breakdown with investment rebate visualizer, employer TDS, and salary increment handling. Fully offline.</p>
+        </div>
+
+        <!-- Primary Download (auto-detected) -->
+        <div class="primary-card" id="primaryCard">
+            <div class="detect-label">Recommended for your device</div>
+            <div class="detect-os" id="detectOs">Detecting your device...</div>
+            <a href="#" class="dl-btn" id="primaryBtn" download>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span id="primaryBtnText">Download</span>
+            </a>
+            <div class="dl-note" id="primaryNote"></div>
+        </div>
+
+        <!-- All platforms -->
+        <div class="section-title">All platforms</div>
+        <div class="platforms">
+            <a href="https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest/download/FinSource.Tax.Calc.1.0.0.exe"
+               class="platform-card" id="winCard" download>
+                <div class="pc-icon">🪟</div>
+                <div class="pc-name">Windows</div>
+                <div class="pc-file">FinSource Tax Calc 1.0.0.exe</div>
+            </a>
+            <a href="https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest/download/FinSource.Tax.Calc-1.0.0-arm64.dmg"
+               class="platform-card" id="macCard" download>
+                <div class="pc-icon">🍎</div>
+                <div class="pc-name">macOS</div>
+                <div class="pc-file">FinSource Tax Calc-1.0.0-arm64.dmg</div>
+            </a>
+            <a href="https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest/download/FinSource_Tax_Calc.apk"
+               class="platform-card" id="androidCard" download>
+                <div class="pc-icon">📱</div>
+                <div class="pc-name">Android</div>
+                <div class="pc-file">FinSource_Tax_Calc.apk</div>
+            </a>
+        </div>
+
+        <!-- Features -->
+        <div class="section-title">What's inside</div>
+        <div class="features">
+            <div class="feat">
+                <div class="feat-icon">💰</div>
+                <div>
+                    <div class="feat-title">Smart Salary Breakdown</div>
+                    <div class="feat-desc">Auto-splits Gross into Basic 60%, HRA 30%, Medical 6%, Conveyance 4%</div>
+                </div>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">📅</div>
+                <div>
+                    <div class="feat-title">Join-Date Handling</div>
+                    <div class="feat-desc">Configurable 1–11 months for Aug–June salary; July handled separately</div>
+                </div>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">🏦</div>
+                <div>
+                    <div class="feat-title">Employer TDS & PF</div>
+                    <div class="feat-desc">Computes the exact tax & PF the office pays on your Basic salary</div>
+                </div>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">📊</div>
+                <div>
+                    <div class="feat-title">Investment Rebate Visualizer</div>
+                    <div class="feat-desc">14 NBR Section 78 categories with live bar chart & remaining capacity</div>
+                </div>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">🎯</div>
+                <div>
+                    <div class="feat-title">Filing Quarter Incentives</div>
+                    <div class="feat-desc">5% early-filing rebate (Jul–Sep) and late-filing surcharge warnings</div>
+                </div>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">✈️</div>
+                <div>
+                    <div class="feat-title">Fully Offline</div>
+                    <div class="feat-desc">No server, no login, no data leaves your device</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>
+                <a href="https://github.com/NIROB066/FinSource-Tax-Calculator">GitHub Repository</a>
+                &nbsp;·&nbsp;
+                <a href="https://github.com/NIROB066/FinSource-Tax-Calculator/releases">All Releases</a>
+                &nbsp;·&nbsp;
+                <a href="https://etaxnbr.gov.bd" target="_blank" rel="noopener">e-Return Portal</a>
+                &nbsp;·&nbsp;
+                <a href="https://nbr.gov.bd" target="_blank" rel="noopener">NBR Bangladesh</a>
+            </p>
+            <p style="margin-top:10px">
+                Developed by <strong style="color:#f8fafc">Mohammad Rifat Anwar</strong>
+                &nbsp;·&nbsp; Based on NBR Income Tax Act 2023 &amp; Finance Act 2025
+            </p>
+            <p style="margin-top:8px; font-size:11px">
+                For official filing, consult a tax advisor or visit etaxnbr.gov.bd &nbsp;·&nbsp; NBR Helpline: 09643717171
+            </p>
+        </footer>
+
+    </div>
+
+    <script>
+        const REPO = 'https://github.com/NIROB066/FinSource-Tax-Calculator';
+        const RELEASE_BASE = REPO + '/releases/latest/download/';
+
+        const DOWNLOADS = {
+            windows: {
+                file: 'FinSource.Tax.Calc.1.0.0.exe',
+                label: 'Download for Windows (.exe)',
+                note: 'Portable — double-click to run, no installation required.',
+                os: '🪟 Windows detected',
+                cardId: 'winCard',
+            },
+            mac: {
+                file: 'FinSource.Tax.Calc-1.0.0-arm64.dmg',
+                label: 'Download for macOS (.dmg)',
+                note: 'Apple Silicon (arm64). Open the DMG and run the app directly.',
+                os: '🍎 macOS detected',
+                cardId: 'macCard',
+            },
+            android: {
+                file: 'FinSource_Tax_Calc.apk',
+                label: 'Download for Android (.apk)',
+                note: 'Sideload APK — enable "Install from Unknown Sources" in device settings first.',
+                os: '📱 Android detected',
+                cardId: 'androidCard',
+            },
+            unknown: {
+                file: null,
+                label: 'View All Downloads on GitHub',
+                note: 'Could not detect your platform. Choose manually below.',
+                os: '❓ Platform unknown',
+                cardId: null,
+            },
+        };
+
+        function detectPlatform() {
+            const ua = navigator.userAgent.toLowerCase();
+            const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+
+            if (/android/.test(ua)) return 'android';
+            if (/iphone|ipad|ipod/.test(ua)) return 'ios'; // iOS — no direct download
+            if (/win/.test(platform) || /windows/.test(ua)) return 'windows';
+            if (/mac/.test(platform) || /macintosh/.test(ua)) return 'mac';
+            return 'unknown';
+        }
+
+        function init() {
+            const platform = detectPlatform();
+            const card = document.getElementById('primaryCard');
+            const osEl = document.getElementById('detectOs');
+            const btn = document.getElementById('primaryBtn');
+            const btnText = document.getElementById('primaryBtnText');
+            const noteEl = document.getElementById('primaryNote');
+
+            if (platform === 'ios') {
+                osEl.innerHTML = '📱 <span>iOS detected</span>';
+                btnText.textContent = 'Open Web App (iOS)';
+                btn.href = REPO;
+                noteEl.textContent = 'Native iOS app not available. Use the web version in Safari, or download the Android APK on an Android device.';
+                card.classList.add('detected');
+                return;
+            }
+
+            const cfg = DOWNLOADS[platform] || DOWNLOADS.unknown;
+
+            osEl.innerHTML = cfg.os.replace(/(🪟|🍎|📱|❓)/, '<span>$1</span> ');
+            osEl.innerHTML = `<span>${cfg.os}</span>`;
+            btnText.textContent = cfg.label;
+            noteEl.textContent = cfg.note;
+
+            if (cfg.file) {
+                btn.href = RELEASE_BASE + cfg.file;
+                btn.setAttribute('download', '');
+                card.classList.add('detected');
+            } else {
+                btn.href = REPO + '/releases/latest';
+                btn.removeAttribute('download');
+                btn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+                btn.style.boxShadow = '0 4px 20px rgba(99,102,241,0.3)';
+            }
+
+            // Highlight matching platform card
+            if (cfg.cardId) {
+                document.getElementById(cfg.cardId)?.classList.add('active-os');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

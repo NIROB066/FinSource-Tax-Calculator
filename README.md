@@ -7,15 +7,24 @@
 **Bangladesh Income Tax FY 2025-26 · NBR Compliant · Offline-First**
 
 [![Version](https://img.shields.io/badge/version-1.0.1-10b981?style=flat-square)](https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-10b981?style=flat-square&logo=github)](https://nirob066.github.io/FinSource-Tax-Calculator/)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Android-6366f1?style=flat-square)](#-download)
 [![NBR](https://img.shields.io/badge/NBR-Compliant-f59e0b?style=flat-square)](https://nbr.gov.bd)
 [![License](https://img.shields.io/badge/license-MIT-94a3b8?style=flat-square)](LICENSE)
 
-[📖 Docs](#-features) &nbsp;·&nbsp; [🐛 Issues](https://github.com/NIROB066/FinSource-Tax-Calculator/issues)
+[🌐 **Live Web App**](https://nirob066.github.io/FinSource-Tax-Calculator/) &nbsp;·&nbsp; [📖 Docs](#-features) &nbsp;·&nbsp; [🐛 Issues](https://github.com/NIROB066/FinSource-Tax-Calculator/issues)
 
 ---
 
 </div>
+
+## 🌐 Web Version
+
+**[→ Open in Browser (no download required)](https://nirob066.github.io/FinSource-Tax-Calculator/)**
+
+Works on any device with a browser — desktop, mobile, tablet. No installation needed.
+
+---
 
 ## ⬇ Download
 

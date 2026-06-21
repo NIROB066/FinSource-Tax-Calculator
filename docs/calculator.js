@@ -8,9 +8,9 @@
  *  - Provident Fund: Employee 6% of basic + Office 6% of basic
  *  - Employee PF contribution is rebate-eligible
  *
- * Updated NBR 2025-26 Rules (Prothom Alo / Financial Express / PwC confirmed):
- *  - Rebate Rate: 10% (was 15%)
- *  - Admissible = min(3% of taxable income, 10% of actual investment, ৳7,50,000)
+ * Updated NBR 2025-26 Rules:
+ *  - Rebate Rate: 10% of actual investment
+ *  - Max Rebate = min(3% of taxable income, 10% of actual investment, ৳7,50,000)
  *  - Quarterly filing incentive: Q1 Jul-Sep = 5% rebate (max ৳25,000)
  *  - Late surcharge: Q3 Jan-Mar = +2% (min ৳3,000), Q4 Apr-Jun = +5% (min ৳5,000)
  */
@@ -51,8 +51,8 @@ const TAX_CONFIG = {
     // Minimum tax by area
     MINIMUM_TAX: { dhaka_ctg: 5000, other_city: 4000, outside_city: 3000 },
 
-    // Investment rebate (updated 2025-26)
-    REBATE_RATE:              0.10,   // 10% of admissible
+    // Investment rebate
+    REBATE_RATE:              0.10,   // 10% of actual investment
     MAX_INVESTMENT_INCOME_PCT:0.03,   // 3% of taxable income
     MAX_INVESTMENT_ABSOLUTE:  750000, // ৳7,50,000 ceiling
 
@@ -60,7 +60,7 @@ const TAX_CONFIG = {
     DPS_ANNUAL_LIMIT: 120000,
 
     // Consolidated allowance exemption
-    MAX_ALLOWANCE_EXEMPTION:  450000,
+    MAX_ALLOWANCE_EXEMPTION:  500000,
     ALLOWANCE_BASIC_PCT:      1/3,
 
     // Quarterly filing rules
@@ -176,29 +176,30 @@ function calculate() {
     // Basic is only used to calculate Office Paid Tax and PF
     const annBasic = Math.round(julyGross * C.SALARY_BASIC_PCT) + Math.round(augGross * C.SALARY_BASIC_PCT) * augMonths;
 
-    // ── 3. Provident Fund (NOT added to Gross Income) ──
+    // ── 3. Provident Fund (Office share added to Gross Income) ──
     const annPFEmployee = Math.round(totalSalary * C.PF_EMPLOYEE_PCT);
     const annPFOffice   = Math.round(totalSalary * C.PF_OFFICE_PCT);
 
-    // Auto-fill PF in investment field if user hasn't overridden it
+    // Auto-fill PF in investment field if user hasn't overridden it (Employer + Employee)
+    const totalPF = annPFEmployee + annPFOffice;
     const pfInput = document.getElementById('inv-provident-fund');
     if (pfInput && !pfInput._manualOverride) {
-        pfInput.value = annPFEmployee || '';
+        pfInput.value = totalPF || '';
     }
 
     // ── 4. Update PF display ──
     const pfEmpEl = document.getElementById('pf-employee');
-    if (pfEmpEl) pfEmpEl.textContent = formatTaka(annPFEmployee);
+    if (pfEmpEl) pfEmpEl.textContent = formatTaka(annPFEmployee) + ' + Office ' + formatTaka(annPFOffice);
     
     const pfRebEl = document.getElementById('pf-rebate-eligible');
-    if (pfRebEl) pfRebEl.textContent = formatTaka(annPFEmployee);
+    if (pfRebEl) pfRebEl.textContent = formatTaka(totalPF);
 
     // ── 5. Gross & Taxable income ──
-    // Gross Income = Salary + Bonuses + Other Income (PF is excluded per instructions)
-    const grossIncome  = annGrossSalary + otherIncome;
+    // Gross Income = Salary + Bonuses + Other Income + Office PF contribution
+    const grossIncome  = annGrossSalary + otherIncome + annPFOffice;
     
-    // Exemption: Standard NBR rule is min(4.5L, 1/3 of Total Salary).
-    const salaryThird = Math.round(annGrossSalary * (1/3));
+    // Exemption: Standard NBR rule is min(5L, 1/3 of Total Income).
+    const salaryThird = Math.round(grossIncome * (1/3));
     const allowanceExemption = Math.min(C.MAX_ALLOWANCE_EXEMPTION, salaryThird);
     
     const taxableIncome = Math.max(0, grossIncome - allowanceExemption);
@@ -209,7 +210,7 @@ function calculate() {
 
     // ── 6. Office Paid Tax (Tax on Basic Only) ──
     const officeSlabDetails = computeSlabs(annBasic, taxFreeLimit);
-    const officePaidTax = officeSlabDetails.totalTax;
+    const taxOnBasic = officeSlabDetails.totalTax;
 
     // ── 7. Investment inputs (14 categories) ──
     const invLifeInsurance   = getVal('inv-life-insurance');
@@ -233,13 +234,20 @@ function calculate() {
 
     // ── 8. Investment rebate calculation ──
     const threePctIncome  = Math.round(taxableIncome * C.MAX_INVESTMENT_INCOME_PCT);
-    const tenPctInvest    = Math.round(totalInvested * C.REBATE_RATE);
-    const admissibleRebate = Math.min(tenPctInvest, threePctIncome, C.MAX_INVESTMENT_ABSOLUTE);
+    const maxRebatePossible = Math.min(threePctIncome, C.MAX_INVESTMENT_ABSOLUTE);
+    const pctInvest       = Math.round(totalInvested * C.REBATE_RATE);
+    const admissibleRebate = Math.min(pctInvest, maxRebatePossible);
     const investRebate    = admissibleRebate;
 
     // ── 9. Gross tax from slabs (on Total Taxable Income) ──
     const slabDetails = computeSlabs(taxableIncome, taxFreeLimit);
     const grossTax = slabDetails.totalTax;
+
+    // ── 9.5 Office Paid Tax Calculation ──
+    // Office assumes employee will invest up to max capacity
+    const assumedNetTaxByOffice = Math.max(0, grossTax - maxRebatePossible);
+    // Office pays the tax on basic, but never more than the assumed net tax
+    const officePaidTax = Math.min(taxOnBasic, assumedNetTaxByOffice);
 
     // ── 10. Net tax after rebate ──
     const taxAfterRebate = Math.max(0, grossTax - investRebate);
@@ -264,7 +272,6 @@ function calculate() {
     }
 
     // ── 12. Final Tax Payable ──
-    // The office has already paid 'officePaidTax' out of 'netTax'. The rest is up to the user.
     const finalPayable = Math.max(0, netTax - officePaidTax);
 
     // ── 13. Effective rate & TDS ──
@@ -274,23 +281,25 @@ function calculate() {
     // ── 14. Update all UI ──
     updateIncomeStrip(grossIncome, allowanceExemption, taxableIncome);
     updateInvestmentBar(totalInvested, admissibleRebate, threePctIncome);
-    updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig });
-    updateOpportunityDashboard({ threePctIncome, totalInvested, investRebate });
-    // ── 12. Final step visual & UI updates ──
+    updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig, officePaidTax, taxOnBasic });
+    updateOpportunityDashboard({ threePctIncome, totalInvested, investRebate, grossIncome, taxableIncome, allowanceExemption });
+    
     updateStepsVisual({
         grossIncome, allowanceExemption, taxableIncome,
-        taxFreeLimit, grossTax, investRebate, admissibleRebate,
-        threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge,
-        netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths
+        taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested,
+        earlyFilingRebate, lateSurcharge,
+        netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice
     });
 
     updateSlabTable('slab-table', slabDetails, taxableIncome, 'Total Gross Tax');
-    updateSlabTable('office-slab-table', officeSlabDetails, annBasic, 'Total Office Paid Tax (on Basic)');
+    updateSlabTable('office-slab-table', officeSlabDetails, annBasic, `Tax Computed on Basic Salary (৳${formatTaka(annBasic)})`);
+    const officeHeader = document.getElementById('office-slab-title-header');
+    if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic Salary: ৳${formatTaka(annBasic)})`;
     document.getElementById('office-slab-container').style.display = 'block';
     updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS: Math.min(getVal('inv-dps'), C.DPS_ANNUAL_LIMIT), invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
-    updateComputationTable({ totalSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird });
+    updateComputationTable({ totalSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
     updateMinTaxCard(minTaxApplied, areaType, grossTax, investRebate, minimumTax);
-    updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax });
+    updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice });
 }
 
 // Mark PF field as manually overridden if user types in it
@@ -333,11 +342,6 @@ function updateIncomeStrip(gross, exempt, taxable) {
     document.getElementById('strip-taxable').textContent = formatTaka(taxable);
 }
 
-function updateBreakdownTable(d) {
-    // Left intentionally empty or can be removed entirely
-    // Breakdown table removed per FinSource rules
-}
-
 function updateInvestmentBar(totalInvested, admissibleRebate, threePctIncome) {
     document.getElementById('total-invested').textContent  = formatTaka(totalInvested);
     document.getElementById('admissible-invest').textContent = formatTaka(admissibleRebate);
@@ -345,10 +349,13 @@ function updateInvestmentBar(totalInvested, admissibleRebate, threePctIncome) {
     document.getElementById('invest-progress').style.width = pct + '%';
 }
 
-function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig }) {
+function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig, officePaidTax, taxOnBasic }) {
     animateValue('final-payable-display', finalPayable);
     document.getElementById('net-tax-display').textContent    = formatTaka(netTax);
-    document.getElementById('net-tax-monthly').textContent    = `Office Pays: ${formatTaka(monthlyOfficeTDS * 12)} (Tax on Basic)`;
+    
+    const reason = officePaidTax < taxOnBasic ? '(Capped by Assumed Net Tax)' : '(Tax on Basic)';
+    document.getElementById('net-tax-monthly').innerHTML      = `Office Pays: <span style="color:#fff">৳${formatTaka(officePaidTax)}</span> <span style="font-size:10px; opacity:0.8; font-weight:500;">${reason}</span>`;
+    
     document.getElementById('gross-tax-display').textContent  = formatTaka(grossTax);
     document.getElementById('rebate-display').textContent     = formatTaka(investRebate + earlyFilingRebate);
 
@@ -383,12 +390,12 @@ function animateValue(id, target) {
     requestAnimationFrame(upd);
 }
 
-function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebate }) {
+function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebate, grossIncome, taxableIncome, allowanceExemption }) {
     const container = document.getElementById('opp-dashboard-container');
     if (!container) return;
 
     const maxRebatePossible = Math.min(threePctIncome, TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE);
-    const maxInvestmentAllowed = maxRebatePossible * 10;
+    const maxInvestmentAllowed = maxRebatePossible / TAX_CONFIG.REBATE_RATE;
     
     const remainingInvestment = Math.max(0, maxInvestmentAllowed - totalInvested);
     const remainingRebate = Math.max(0, maxRebatePossible - investRebate);
@@ -426,16 +433,25 @@ function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebat
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </div>
                 <div>
-                    <div class="opp-title">Tax Savings Opportunity</div>
-                    <div class="opp-subtitle">Based on your income and current investments</div>
+                    <div class="opp-title">Investment Capacity & Income Calculation</div>
+                    <div class="opp-subtitle">Understanding your max investment limits</div>
                 </div>
             </div>
             
+            <div style="background:rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 12px; color: #cbd5e1;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Total Gross Income:</span><strong style="color:#f8fafc">${formatTaka(grossIncome)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Less: Exemption:</span><strong style="color:#10b981">-${formatTaka(allowanceExemption)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;"><span>Taxable Income:</span><strong style="color:#f8fafc">${formatTaka(taxableIncome)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px; margin-top: 4px;"><span>Max Rebate Cap (3% of Taxable Income):</span><strong style="color:#f59e0b">${formatTaka(threePctIncome)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Max Rebate Allowed (Capped at ৳7.5L):</span><strong style="color:#f59e0b">${formatTaka(maxRebatePossible)}</strong></div>
+                <div style="display:flex; justify-content:space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px; font-weight: 700; color: #10b981;"><span>Required Investment for Max Rebate (Rebate ÷ 10%):</span><span>${formatTaka(maxInvestmentAllowed)}</span></div>
+            </div>
+
             <div class="opp-grid">
                 <div class="opp-card">
                     <div class="opp-card-label">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        Max Investment Limit
+                        Max Investment Target
                     </div>
                     <div class="opp-card-value">${formatTaka(maxInvestmentAllowed)}</div>
                     <div class="opp-card-sub">Cap: ${formatTaka(maxRebatePossible)} Rebate</div>
@@ -456,25 +472,25 @@ function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebat
 }
 
 
-function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge, netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths = 11 }) {
+function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge, netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths = 11, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
     const container = document.getElementById('steps-visual');
     if (!container) return;
 
     const steps = [
-        { n: 1, cls: 'step-c1', title: 'Annual Gross Income', detail: `July salary (×1) + Aug–June salary (×${augMonths}) + Bonuses + Other Income`, amount: grossIncome },
-        { n: 2, cls: 'step-c2', title: '(−) Allowance Exemption', detail: `min(৳4,50,000 , 1/3 of Total Salary ৳${formatTaka(salaryThird)}) = ${formatTaka(allowanceExemption)}`, amount: -allowanceExemption, isDeduction: true },
+        { n: 1, cls: 'step-c1', title: 'Annual Gross Income', detail: `Salary + Bonuses + Office PF + Other Income`, amount: grossIncome },
+        { n: 2, cls: 'step-c2', title: '(−) Allowance Exemption', detail: `min(৳5,00,000 , 1/3 of Total Income ৳${formatTaka(salaryThird)}) = ${formatTaka(allowanceExemption)}`, amount: -allowanceExemption, isDeduction: true },
         { n: 3, cls: 'step-c3', title: '= Taxable Income', detail: 'Gross Income − Allowance Exemption', amount: taxableIncome, isResult: true },
         { n: 4, cls: 'step-c1', title: '(−) Tax-Free Threshold', detail: `Your category's tax-free limit`, amount: -taxFreeLimit, isDeduction: true },
         { n: 5, cls: 'step-c3', title: 'Gross Tax (from slabs)', detail: 'Progressive slab-wise calculation below', amount: grossTax },
-        { n: 6, cls: 'step-c2', title: '(−) Investment Rebate', detail: `10% of admissible (${formatTaka(admissibleRebate)}) | Total invested: ${formatTaka(totalInvested)}`, amount: -investRebate, isDeduction: true },
+        { n: 6, cls: 'step-c2', title: '(−) Investment Rebate', detail: `min(10% of investment, 3% of taxable income, ৳7.5L) | Total invested: ${formatTaka(totalInvested)}`, amount: -investRebate, isDeduction: true },
     ];
 
     if (earlyFilingRebate > 0) steps.push({ n: 7, cls: 'step-c2', title: '(−) Early Filing Rebate', detail: `5% of net tax (max ৳25,000) — ${qConfig.label}`, amount: -earlyFilingRebate, isDeduction: true });
     if (lateSurcharge > 0)     steps.push({ n: 7, cls: 'step-c4', title: '(+) Late Filing Surcharge', detail: qConfig.label, amount: lateSurcharge });
 
-    steps.push({ n: steps.length + 1, cls: 'step-c5', title: '= TOTAL NET TAX PAYABLE', detail: 'Final tax on all your income', amount: netTax, isResult: true });
-    steps.push({ n: steps.length + 2, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: 'Tax calculated on Basic Salary alone', amount: -officePaidTax, isDeduction: true });
-    steps.push({ n: steps.length + 3, cls: 'step-c4', title: '= FINAL PAYABLE BY YOU', detail: 'What you need to pay out of pocket', amount: finalPayable, isFinal: true, isResult: true });
+    steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Total Net Tax', detail: 'After all rebates & surcharges', amount: netTax, isResult: true });
+    steps.push({ n: steps.length + 1, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: `min(Tax on Basic ৳${formatTaka(taxOnBasic)}, Assumed Net Tax ৳${formatTaka(assumedNetTaxByOffice)})`, amount: -officePaidTax, isDeduction: true });
+    steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Final Payable By You', detail: 'Total Net Tax − Office Contribution', amount: finalPayable, isResult: true });
 
     container.innerHTML = steps.map((s, i) => `
         <div class="step-item">
@@ -485,7 +501,7 @@ function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, tax
             <div class="step-body">
                 <div class="step-title" style="${s.isFinal ? 'color:var(--accent-green);font-size:14px' : ''}">
                     ${s.title}
-                    <span class="step-amount" style="color:${s.isDeduction ? 'var(--accent-green)' : s.isFinal ? 'var(--accent-green)' : 'var(--text-primary)'}">${s.isDeduction ? '−' : ''}${formatTaka(Math.abs(s.amount))}</span>
+                    <span class="step-amount" style="color:${s.isDeduction ? 'var(--accent-green)' : s.isResult ? 'var(--accent-green)' : 'var(--text-primary)'}">${s.isDeduction ? '−' : ''}${formatTaka(Math.abs(s.amount))}</span>
                 </div>
                 <div class="step-detail">${s.detail}</div>
             </div>
@@ -539,7 +555,7 @@ function updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, 
     const container = document.getElementById('inv-chart');
     if (!container) return;
 
-    const maxInvestmentCap = threePctIncome / 0.10;
+    const maxInvestmentCap = threePctIncome / TAX_CONFIG.REBATE_RATE;
     const maxCap = Math.max(maxInvestmentCap, totalInvested, 1);
 
     let html = '';
@@ -576,7 +592,7 @@ function updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, 
         <div style="text-align:center;border-left:1px solid var(--border)">
             <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px">Rebate Earned</div>
             <div style="font-size:15px;font-weight:800;color:var(--accent-amber)">${formatTaka(investRebate)}</div>
-            <div style="font-size:10px;color:var(--text-muted)">10% of admissible</div>
+            <div style="font-size:10px;color:var(--text-muted)">10% of investment, up to cap</div>
         </div>
     </div>`;
 
@@ -603,8 +619,9 @@ function updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, 
 }
 
 
-function updateComputationTable({ totalSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird }) {
+function updateComputationTable({ totalSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
     const container = document.getElementById('computation-table');
+    if (!container) return;
     container.innerHTML = '';
 
     const rows = [
@@ -613,22 +630,29 @@ function updateComputationTable({ totalSalary, festivalBonusAmt, perfBonusAmt, a
         { label: 'Festival Bonuses', value: festivalBonusAmt, indent: true },
         { label: 'Performance Bonuses', value: perfBonusAmt, indent: true },
         { label: 'Total Salary Income', value: annGrossSalary, isSubtotal: true },
+        { label: 'Employer PF Contribution', value: Math.round(totalSalary * TAX_CONFIG.PF_OFFICE_PCT), indent: true },
         { label: 'Other Income', value: otherIncome },
         { label: 'TOTAL GROSS INCOME', value: grossIncome, isSubtotal: true },
-        { label: `Less: Allowance Exemption (min of ৳4,50,000 / 1/3 Total Salary ৳${formatTaka(salaryThird)})`, value: -allowanceExemption, isDeduction: true },
+        { label: `Less: Allowance Exemption (min of ৳5,00,000 / 1/3 Total Income ৳${formatTaka(salaryThird)})`, value: -allowanceExemption, isDeduction: true },
         { label: 'TAXABLE INCOME', value: taxableIncome, isTotal: true },
         { label: 'Less: Tax-Free Threshold', value: -taxFreeLimit, isDeduction: true },
         { label: '', isDivider: true },
         { label: 'B. TAX CALCULATION', isHeader: true },
         { label: 'Gross Tax (Slab-wise)', value: grossTax },
-        { label: 'Less: Investment Rebate (10% of admissible)', value: -investRebate, isDeduction: true },
+        { label: 'Less: Investment Rebate (min of 10% of invest or 3% of income)', value: -investRebate, isDeduction: true },
         { label: 'Tax After Investment Rebate', value: Math.max(0, grossTax - investRebate), isSubtotal: true },
         minTaxApplied ? { label: `⚠ Minimum Tax Applied (${formatTaka(minimumTax)})`, value: minimumTax, note: true } : null,
         earlyFilingRebate > 0 ? { label: '🎉 Early Filing Rebate (Jul–Sep 5%, max ৳25,000)', value: -earlyFilingRebate, isDeduction: true } : null,
         lateSurcharge > 0 ? { label: `⚠ Late Filing Surcharge (${qConfig.label})`, value: lateSurcharge, isSurcharge: true } : null,
-        { label: 'TOTAL NET TAX', value: netTax, isSubtotal: true },
-        { label: 'Less: Tax Paid by Office (Computed on Basic)', value: -officePaidTax, isDeduction: true },
-        { label: 'FINAL PAYABLE BY YOU', value: finalPayable, isTotal: true },
+        { label: 'Net Tax Payable', value: netTax, isSubtotal: true },
+        { label: '', isDivider: true },
+        { label: 'C. OFFICE CONTRIBUTION (TAX ON BASIC)', isHeader: true },
+        { label: 'Annual Basic Salary (60% of Salary)', value: annBasic },
+        { label: 'Computed Tax on Basic', value: taxOnBasic },
+        { label: 'Office Assumed Net Tax (Gross Tax − Max Rebate)', value: assumedNetTaxByOffice, note: true },
+        { label: `Less: Tax Paid by Office (min of Tax on Basic or Assumed Net Tax)`, value: -officePaidTax, isDeduction: true },
+        { label: '', isDivider: true },
+        { label: 'FINAL TAX PAYABLE BY YOU', value: finalPayable, isTotal: true }
     ].filter(Boolean);
 
     rows.forEach(row => {
@@ -663,7 +687,7 @@ function updateMinTaxCard(applied, areaType, grossTax, investRebate, minimumTax)
     }
 }
 
-function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax }) {
+function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice }) {
     const list = document.getElementById('tips-list');
     list.innerHTML = '';
     const tips = [];
@@ -683,7 +707,13 @@ function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate
         tips.push(`📊 You can earn up to ${formatTaka(unusedRebate)} more in investment rebate. Your 3%-of-income cap is ${formatTaka(threePctIncome)} (max ৳7,50,000).`);
     }
 
-    if (investRebate > 0) tips.push(`✅ Investment rebate saves you ${formatTaka(investRebate)} tax — that's 10% of your admissible investments.`);
+    if (investRebate > 0) tips.push(`✅ Investment rebate saves you ${formatTaka(investRebate)} tax — that's 10% of your investments (subject to 3% income limit).`);
+
+    if (taxOnBasic > 0 && officePaidTax < taxOnBasic) {
+        tips.push(`🏢 Your Office Tax is capped at ৳${formatTaka(officePaidTax)}! Your employer assumes you will maximize your investment rebate. Since your expected tax after maximum rebate is ৳${formatTaka(assumedNetTaxByOffice)}, the office won't pay more than that even if the tax on your basic salary is higher (৳${formatTaka(taxOnBasic)}).`);
+    } else if (taxOnBasic > 0) {
+        tips.push(`🏢 Your Office fully pays your Tax on Basic (৳${formatTaka(taxOnBasic)}).`);
+    }
 
     tips.push('📝 File your e-Return at etaxnbr.gov.bd. Online filing is now mandatory for most taxpayers.');
     tips.push('📂 Keep receipts for all investments: DPS passbook, Sanchayapatra certificates, life insurance premium receipts, and PF statements.');
@@ -702,46 +732,99 @@ function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate
 // ════════════════════════════════════════════════
 function printReport() {
     const now = new Date().toLocaleDateString('en-BD', { day:'numeric', month:'long', year:'numeric' });
-    const netTax    = document.getElementById('final-payable-display').textContent;
+    
+    // Fetch values
     const gross     = document.getElementById('strip-gross').textContent;
     const taxable   = document.getElementById('strip-taxable').textContent;
-    const rebate    = document.getElementById('rebate-display').textContent;
     const totalNet  = document.getElementById('net-tax-display').textContent;
-    const officePay = document.getElementById('net-tax-monthly').textContent;
+    const rebate    = document.getElementById('rebate-display').textContent;
+    const officePay = document.getElementById('net-tax-monthly').textContent; 
+    const netTax    = document.getElementById('final-payable-display').textContent;
+    const totalInvested = document.getElementById('total-invested').textContent;
+    
+    // Taxpayer details
+    const taxpayerTypeSel = document.getElementById('taxpayer-type');
+    const taxpayerTypeStr = taxpayerTypeSel.options[taxpayerTypeSel.selectedIndex].text;
+    
+    const areaSel = document.getElementById('area-type');
+    const areaStr = areaSel.options[areaSel.selectedIndex].text;
+    
     const compHTML  = document.getElementById('computation-table').innerHTML;
-    const slabHTML  = document.getElementById('slab-table').innerHTML;
+    let slabHTML  = document.getElementById('slab-table').innerHTML;
+    
+    // Add office slab table if it is currently visible
+    const officeSlabContainer = document.getElementById('office-slab-container');
+    if (officeSlabContainer && officeSlabContainer.style.display !== 'none') {
+        const officeSlab = document.getElementById('office-slab-table').innerHTML;
+        slabHTML += `<div style="margin-top: 16px;">${officeSlab}</div>`;
+    }
 
     const overlay = document.getElementById('print-overlay');
     if (!overlay) { window.print(); return; }
 
     overlay.innerHTML = `
-        <div class="pr-hdr">
+        <div class="pr-hdr" style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px;">
+            <div style="flex: 1;">
+                <h1 style="margin: 0; font-size: 24px; color: #111; letter-spacing: -0.5px;">Income Tax Computation Report</h1>
+                <p style="margin: 4px 0 0; font-size: 13px; color: #555; font-weight: 500;">FinSource Tax Calculator — NBR Bangladesh</p>
+            </div>
+            <div style="text-align: right; font-size: 12px; color: #555; line-height: 1.6;">
+                <div>Date: <strong style="color:#111">${now}</strong></div>
+                <div>Income Year: <strong style="color:#111">2024-2025</strong></div>
+                <div>Assessment Year: <strong style="color:#111">2025-2026</strong></div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div style="border: 1px solid #ccc; border-radius: 6px; padding: 14px;">
+                <h3 style="margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #555; border-bottom: 1px solid #eee; padding-bottom: 6px;">Taxpayer Details</h3>
+                <div style="font-size: 12px; line-height: 2;">
+                    <div style="display:flex; justify-content:space-between;"><strong>Name:</strong> <span>___________________________</span></div>
+                    <div style="display:flex; justify-content:space-between;"><strong>TIN / NID:</strong> <span>___________________________</span></div>
+                    <div style="display:flex; justify-content:space-between;"><strong>Category:</strong> <span>${taxpayerTypeStr.split('—')[0].trim()}</span></div>
+                    <div style="display:flex; justify-content:space-between;"><strong>Location:</strong> <span>${areaStr.split('—')[0].trim()}</span></div>
+                </div>
+            </div>
+            <div style="border: 1px solid #ccc; border-radius: 6px; padding: 14px; background: #f8fafc;">
+                <h3 style="margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #555; border-bottom: 1px solid #eee; padding-bottom: 6px;">Summary at a Glance</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; line-height: 1.8;">
+                    <div>Gross Income:</div><div style="text-align: right; font-weight: bold;">${gross}</div>
+                    <div>Taxable Income:</div><div style="text-align: right; font-weight: bold;">${taxable}</div>
+                    <div>Total Invested:</div><div style="text-align: right; font-weight: bold;">${totalInvested}</div>
+                    <div style="color: #059669;">Tax Rebate:</div><div style="text-align: right; font-weight: bold; color: #059669;">${rebate}</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="border: 2px solid #111; border-radius: 8px; padding: 16px; margin-bottom: 24px; background: #fff; text-align: center; box-shadow: 0 2px 0 #111;">
+            <div style="font-size: 12px; color: #555; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; letter-spacing: 1px;">Final Tax Payable By You</div>
+            <div style="font-size: 32px; font-weight: 800; color: #111; margin-bottom: 8px;">${netTax}</div>
+            <div style="font-size: 12px; color: #555;">Total Tax: <strong>${totalNet}</strong> &nbsp;|&nbsp; <strong>${officePay}</strong></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
             <div>
-                <h1>Income Tax Computation Statement</h1>
-                <p style="font-size:12px;color:#555;margin-top:3px">FinSource Tax Calculator — National Board of Revenue, Bangladesh</p>
-                <span class="pr-badge">FY 2025-26 | NBR Compliant</span>
+                <h2 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #ccc; padding-bottom: 6px; margin-bottom: 12px; color: #333;">1. Detailed Computation</h2>
+                <div style="border: 1px solid #eee; border-radius: 4px; padding: 4px;">
+                    ${compHTML}
+                </div>
             </div>
-            <div style="text-align:right;font-size:12px;color:#777">
-                <p>Generated on:</p>
-                <p><strong>${now}</strong></p>
+            
+            <div style="page-break-inside: avoid;">
+                <h2 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #ccc; padding-bottom: 6px; margin-bottom: 12px; margin-top: 20px; color: #333;">2. Tax Slab Breakdown</h2>
+                <div style="border: 1px solid #eee; border-radius: 4px; padding: 4px;">
+                    ${slabHTML}
+                </div>
             </div>
         </div>
-        <div class="pr-grid">
-            <div class="pr-box"><div class="pr-lbl">Gross Income</div><div class="pr-val">${gross}</div></div>
-            <div class="pr-box"><div class="pr-lbl">Total Net Tax</div><div class="pr-val a">${totalNet}</div></div>
-            <div class="pr-box"><div class="pr-lbl">Investment Rebate</div><div class="pr-val g">${rebate}</div></div>
-            <div class="pr-box hl"><div class="pr-lbl">Final Payable By You</div><div class="pr-val">${netTax}</div></div>
-        </div>
-        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px">
-            <strong style="color:#065f46">${officePay}</strong>
-        </div>
-        <h2>Income &amp; Tax Computation</h2>
-        ${compHTML}
-        <h2>Tax Slab Breakdown</h2>
-        ${slabHTML}
-        <div class="pr-footer">
-            <p>This report is for reference purposes only. For official tax assessment, consult the NBR or a registered tax advisor.</p>
-            <p>Official e-Return portal: etaxnbr.gov.bd &nbsp;|&nbsp; NBR Helpline: 09643717171</p>
+
+        <div class="pr-footer" style="margin-top: 50px; padding-top: 20px; text-align: center; font-size: 11px; color: #777;">
+            <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 40px; margin-bottom: 30px;">
+                <div style="border-top: 1px solid #333; padding-top: 5px; width: 200px; text-align: center;">Date</div>
+                <div style="border-top: 1px solid #333; padding-top: 5px; width: 200px; text-align: center;">Signature of Taxpayer</div>
+            </div>
+            <p>I hereby declare that the information provided above is true to the best of my knowledge.</p>
+            <p style="margin-top: 8px; font-size: 10px;">Generated by FinSource Tax Calculator | Official e-Return portal: etaxnbr.gov.bd</p>
         </div>
     `;
 

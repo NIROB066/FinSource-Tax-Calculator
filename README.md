@@ -30,8 +30,8 @@ Works on any device with a browser — desktop, mobile, tablet. No installation 
 
 | Platform | Download | Notes |
 |---|---|---|
-| 🪟 **Windows** | [**FinSource Tax Calc 1.0.0.exe**](https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest/download/FinSource.Tax.Calc.1.0.0.exe) | Double-click to run — no install needed |
-| 🍎 **macOS** (Apple Silicon) | [**FinSource Tax Calc-1.0.0-arm64.dmg**](https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest/download/FinSource.Tax.Calc-1.0.0-arm64.dmg) | Open DMG → drag to Applications or run directly |
+| 🪟 **Windows** | [**FinSource Tax Calc.exe**](https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest/download/FinSource.Tax.Calc.1.0.2.exe) | Double-click to run — no install needed |
+| 🍎 **macOS** (Apple Silicon) | [**FinSource Tax Calc.dmg**](https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest/download/FinSource.Tax.Calc-1.0.2-arm64.dmg) | Open DMG → drag to Applications or run directly |
 | 📱 **Android** | [**FinSource_Tax_Calc.apk**](https://github.com/NIROB066/FinSource-Tax-Calculator/releases/latest/download/FinSource_Tax_Calc.apk) | Enable *Install from Unknown Sources* before installing |
 
 ---

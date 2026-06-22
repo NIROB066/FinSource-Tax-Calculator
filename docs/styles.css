@@ -1443,10 +1443,497 @@ body {
 }
 
 /* ===========================
+   MOBILE APP REDESIGN
+   Bottom-tab navigation + floating tax summary
+   =========================== */
+
+/* ── Mobile Floating Tax Summary Card ── */
+#mobile-tax-summary {
+    display: none;
+}
+
+/* ── Mobile Bottom Tab Bar ── */
+#mobile-tab-bar {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* ── Hide desktop-only elements ── */
+    .hero { display: none !important; }
+
+    .panel-titlebar { display: none !important; }
+
+    .panel {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+    .panel::before { display: none !important; }
+
+    .topic-divider { display: none !important; }
+
+    .main-content {
+        padding: 0 0 100px !important;
+    }
+
+    .calculator-grid {
+        gap: 0 !important;
+    }
+
+    /* ── Body adjustments for fixed elements ── */
+    body {
+        padding-top: 0;
+        padding-bottom: 72px; /* space for bottom bar */
+    }
+
+    /* ── Compact header ── */
+    .header-inner {
+        padding: 8px 16px !important;
+    }
+    .logo-icon { width: 30px !important; height: 30px !important; }
+    .logo-title { font-size: 12px !important; }
+    .logo-subtitle { font-size: 9px !important; }
+    .print-btn-header { padding: 6px 10px !important; font-size: 11px !important; gap: 4px !important; }
+    .print-btn-header svg { width: 13px; height: 13px; }
+    .install-btn-header { padding: 6px 10px !important; font-size: 11px !important; }
+
+    /* ── Mobile Floating Tax Summary Card ── */
+    #mobile-tax-summary {
+        display: block;
+        position: sticky;
+        top: 49px; /* below compact header */
+        z-index: 90;
+        margin: 0;
+        padding: 12px 16px;
+        background: rgba(10, 22, 40, 0.88);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .mob-summary-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .mob-summary-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .mob-summary-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -1px;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+    }
+
+    .mob-summary-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 9px;
+        font-weight: 700;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--accent-green);
+        letter-spacing: 0.3px;
+        margin-top: 4px;
+    }
+
+    .mob-summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .mob-summary-item {
+        background: rgba(10, 22, 40, 0.7);
+        padding: 8px 10px;
+        text-align: center;
+    }
+
+    .mob-summary-item-label {
+        font-size: 9px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 3px;
+    }
+
+    .mob-summary-item-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mob-summary-item-value.green { color: var(--accent-green); }
+    .mob-summary-item-value.amber { color: var(--accent-amber); }
+
+    /* ── Mobile Bottom Tab Bar ── */
+    #mobile-tab-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        background: rgba(5, 12, 20, 0.92);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-top: 1px solid rgba(26, 48, 80, 0.6);
+        padding: 6px 4px;
+        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .mob-tab-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 4px 8px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: color 0.2s, transform 0.2s;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+        min-width: 56px;
+        font-family: inherit;
+    }
+
+    .mob-tab-btn svg {
+        width: 22px;
+        height: 22px;
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .mob-tab-btn span {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        transition: color 0.2s;
+    }
+
+    .mob-tab-btn.active {
+        color: var(--accent-green);
+    }
+
+    .mob-tab-btn.active svg {
+        transform: scale(1.15) translateY(-1px);
+    }
+
+    .mob-tab-btn.active::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 24px;
+        height: 3px;
+        border-radius: 0 0 4px 4px;
+        background: var(--accent-green);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+
+    .mob-tab-btn:active {
+        transform: scale(0.92);
+    }
+
+    /* ── Tab Content Panels ── */
+    .mob-tab-panel {
+        display: none;
+        animation: mobTabFadeIn 0.3s ease forwards;
+    }
+
+    .mob-tab-panel.active {
+        display: block;
+    }
+
+    @keyframes mobTabFadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Tab content wrapper ── */
+    #mobile-tab-content {
+        padding: 12px 16px;
+        min-height: calc(100vh - 200px);
+    }
+
+    /* ── Section card improvements for mobile ── */
+    #mobile-tab-content .section-card {
+        margin-bottom: 12px;
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    #mobile-tab-content .section-header {
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+    }
+
+    #mobile-tab-content .section-icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    #mobile-tab-content .section-title {
+        font-size: 14px;
+    }
+
+    #mobile-tab-content .section-desc {
+        font-size: 11px;
+    }
+
+    /* ── Improved touch targets ── */
+    #mobile-tab-content .form-input,
+    #mobile-tab-content .form-select {
+        min-height: 46px;
+        font-size: 15px;
+    }
+
+    #mobile-tab-content .form-label {
+        font-size: 12px;
+    }
+
+    /* ── Tab page titles ── */
+    .mob-tab-page-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        margin-bottom: 4px;
+    }
+
+    .mob-tab-page-subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+
+    /* ── Step indicator ── */
+    .mob-step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 10px 14px;
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        border-radius: 12px;
+    }
+
+    .mob-step-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--gradient-green);
+        color: white;
+        font-size: 13px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .mob-step-text {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .mob-step-text strong {
+        color: var(--text-primary);
+        display: block;
+        font-size: 13px;
+    }
+
+    /* ── Mobile calculate button ── */
+    .mob-calc-btn-wrap {
+        position: sticky;
+        bottom: 80px;
+        z-index: 50;
+        padding: 8px 0;
+    }
+
+    #mobile-tab-content .calc-btn {
+        border-radius: 14px;
+        padding: 14px;
+        font-size: 15px;
+        box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);
+    }
+
+    /* ── Results tab: make result hero more compact ── */
+    #mobile-tab-content .result-hero-card {
+        padding: 18px;
+        border-radius: 16px;
+        margin-bottom: 12px;
+    }
+
+    #mobile-tab-content .result-main-value {
+        font-size: 36px !important;
+    }
+
+    #mobile-tab-content .result-cards-row {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+    }
+
+    #mobile-tab-content .result-mini-card {
+        padding: 8px;
+    }
+
+    #mobile-tab-content .mini-label {
+        font-size: 8px;
+    }
+
+    #mobile-tab-content .mini-value {
+        font-size: 13px;
+    }
+
+    /* ── Reference section on mobile ── */
+    .reference-section {
+        margin-top: 0 !important;
+    }
+
+    .ref-title {
+        font-size: 18px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .ref-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .ref-card {
+        padding: 16px !important;
+    }
+
+    /* ── Footer adjustments ── */
+    .footer {
+        padding: 24px 16px 100px !important;
+    }
+
+    /* ── Investment items mobile ── */
+    #mobile-tab-content .inv-cat-item {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    #mobile-tab-content .inv-cat-input {
+        width: 100% !important;
+    }
+
+    #mobile-tab-content .inv-cat-name {
+        font-size: 12px;
+    }
+
+    #mobile-tab-content .inv-cat-desc {
+        font-size: 10px;
+    }
+
+    /* ── PF summary box compact ── */
+    #mobile-tab-content .pf-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── Income summary box compact ── */
+    #mobile-tab-content .income-summary-box {
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 4px;
+    }
+
+    #mobile-tab-content .isb-label {
+        font-size: 8px;
+    }
+
+    #mobile-tab-content .isb-value {
+        font-size: 12px;
+    }
+
+    /* ── Opp dashboard mobile ── */
+    #mobile-tab-content .opp-dashboard {
+        padding: 16px;
+        border-radius: 14px;
+        margin-top: 12px;
+        margin-bottom: 12px;
+    }
+
+    #mobile-tab-content .opp-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px;
+    }
+
+    #mobile-tab-content .opp-card-value {
+        font-size: 18px;
+    }
+
+    /* ── Month picker compact ── */
+    #mobile-tab-content .month-picker-row {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    #mobile-tab-content .month-picker-row .select-wrapper {
+        max-width: 100% !important;
+    }
+
+    /* ── Tips card ── */
+    #mobile-tab-content .tips-card {
+        margin-top: 12px;
+    }
+
+    /* ── Hide desktop calculate button on input tabs ── */
+    .panel-input > .calc-btn {
+        display: none !important;
+    }
+
+    /* ── Action row ── */
+    #mobile-tab-content .action-row {
+        margin-top: 12px;
+    }
+
+    /* ── Slab rows compact ── */
+    #mobile-tab-content .slab-row {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+}
+
+/* ===========================
    Print Media
    =========================== */
 @media print {
     body > *:not(#print-overlay) { display: none !important; }
     .print-overlay { position: static; background: white; padding: 0; }
     .print-content { color: #000; background: white; width: 100%; max-width: 100%; }
+    #mobile-tax-summary { display: none !important; }
+    #mobile-tab-bar { display: none !important; }
 }

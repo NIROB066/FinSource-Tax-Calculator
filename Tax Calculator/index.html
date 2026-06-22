@@ -410,6 +410,35 @@
         </div>
     </header>
 
+    <!-- Mobile Floating Tax Summary Card (hidden on desktop) -->
+    <div id="mobile-tax-summary">
+        <div class="mob-summary-main">
+            <div>
+                <div class="mob-summary-label">Final Tax Payable</div>
+                <div class="mob-summary-value" id="mob-final-tax">৳0</div>
+                <div class="mob-summary-badge">FY 2025-26 · NBR</div>
+            </div>
+            <div style="text-align:right">
+                <div class="mob-summary-label">Office Pays</div>
+                <div class="mob-summary-value" id="mob-office-tax" style="font-size:18px;color:var(--accent-green)">৳0</div>
+            </div>
+        </div>
+        <div class="mob-summary-grid">
+            <div class="mob-summary-item">
+                <div class="mob-summary-item-label">Gross Tax</div>
+                <div class="mob-summary-item-value" id="mob-gross-tax">৳0</div>
+            </div>
+            <div class="mob-summary-item">
+                <div class="mob-summary-item-label">Rebate</div>
+                <div class="mob-summary-item-value green" id="mob-rebate">৳0</div>
+            </div>
+            <div class="mob-summary-item">
+                <div class="mob-summary-item-label">Net Tax</div>
+                <div class="mob-summary-item-value amber" id="mob-net-tax">৳0</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero -->
     <section class="hero">
         <div class="container">
@@ -441,7 +470,7 @@
             <div class="calculator-grid">
 
                 <!-- ═══ LEFT PANEL ═══ -->
-                <div class="panel panel-input">
+                <div class="panel panel-input" id="panel-input">
                     <div class="panel-titlebar">
                         <div class="panel-titleblock">
                             <span class="panel-kicker">Input Workspace</span>
@@ -459,7 +488,7 @@
                     </div>
 
                     <!-- SECTION 1: Taxpayer Profile -->
-                    <div class="section-card">
+                    <div class="section-card" data-mobile-tab="profile">
                         <div class="section-header">
                             <div class="section-icon icon-blue">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -535,7 +564,7 @@
                     </div>
 
                     <!-- SECTION 2: Monthly Salary -->
-                    <div class="section-card">
+                    <div class="section-card" data-mobile-tab="salary">
                         <div class="section-header">
                             <div class="section-icon icon-green">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -651,7 +680,7 @@
                         </div>
 
                         <!-- Provident Fund Summary -->
-                        <div class="pf-summary-box">
+                        <div class="pf-summary-box" data-mobile-tab="salary">
                             <div class="pf-title">Provident Fund</div>
                             <div class="pf-grid">
                                 <div class="pf-item">Your Contribution (6%) + Office (6%)<strong id="pf-employee">৳0</strong></div>
@@ -662,7 +691,7 @@
                         <!-- Breakdown UI removed per FinSource rules -->
 
                         <!-- Income Summary -->
-                        <div class="income-summary-box" style="margin-top:14px">
+                        <div class="income-summary-box" data-mobile-tab="salary" style="margin-top:14px">
                             <div class="isb-item">
                                 <div class="isb-label">Annual Gross</div>
                                 <div class="isb-value" id="strip-gross">৳0</div>
@@ -686,7 +715,7 @@
                     </div>
 
                     <!-- SECTION 3: Investments -->
-                    <div class="section-card">
+                    <div class="section-card" data-mobile-tab="invest">
                         <div class="section-header">
                             <div class="section-icon icon-purple">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
@@ -853,7 +882,7 @@
                 </div>
 
                 <!-- ═══ RIGHT PANEL ═══ -->
-                <div class="panel panel-results" id="results-panel">
+                <div class="panel panel-results" id="results-panel" data-mobile-tab="results">
                     <div class="panel-titlebar">
                         <div class="panel-titleblock">
                             <span class="panel-kicker">Results Workspace</span>
@@ -1006,7 +1035,7 @@
             </div>
 
             <!-- Reference Table -->
-            <div class="reference-section">
+            <div class="reference-section" data-mobile-tab="reference">
                 <h2 class="ref-title">FY 2025-26 Tax Rules Reference (NBR Bangladesh)</h2>
                 <div class="ref-grid">
                     <div class="ref-card">
@@ -1085,6 +1114,30 @@
             </div>
         </div>
     </footer>
+
+    <!-- Mobile Bottom Tab Bar (hidden on desktop via CSS) -->
+    <nav id="mobile-tab-bar">
+        <button class="mob-tab-btn active" data-tab="profile" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+        </button>
+        <button class="mob-tab-btn" data-tab="salary" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Salary</span>
+        </button>
+        <button class="mob-tab-btn" data-tab="invest" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span>Invest</span>
+        </button>
+        <button class="mob-tab-btn" data-tab="results" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Results</span>
+        </button>
+        <button class="mob-tab-btn" data-tab="reference" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Reference</span>
+        </button>
+    </nav>
 
     <!-- Print Report Overlay -->
     <div id="print-overlay"></div>
@@ -1203,6 +1256,261 @@
                 });
             }
         });
+    </script>
+
+    <!-- ═══ MOBILE TAB CONTROLLER ═══ -->
+    <script>
+    (function() {
+        'use strict';
+
+        const MOB_BREAKPOINT = 768;
+        let isMobile = window.innerWidth <= MOB_BREAKPOINT;
+        let currentTab = 'profile';
+        let mobileInitialized = false;
+
+        // Tab definitions: which data-mobile-tab values belong to each tab
+        const TAB_ORDER = ['profile', 'salary', 'invest', 'results', 'reference'];
+
+        function initMobile() {
+            if (mobileInitialized) return;
+            mobileInitialized = true;
+
+            // Create the tab content wrapper
+            const mainContent = document.querySelector('.main-content');
+            if (!mainContent) return;
+
+            const container = mainContent.querySelector('.container');
+            if (!container) return;
+
+            // Create tab content container
+            let tabContent = document.getElementById('mobile-tab-content');
+            if (!tabContent) {
+                tabContent = document.createElement('div');
+                tabContent.id = 'mobile-tab-content';
+                container.insertBefore(tabContent, container.firstChild);
+            }
+
+            // Create tab panels
+            TAB_ORDER.forEach(tabName => {
+                let panel = document.getElementById('mob-panel-' + tabName);
+                if (!panel) {
+                    panel = document.createElement('div');
+                    panel.id = 'mob-panel-' + tabName;
+                    panel.className = 'mob-tab-panel' + (tabName === currentTab ? ' active' : '');
+                    tabContent.appendChild(panel);
+                }
+            });
+
+            // Move sections into their tab panels
+            organizeIntoTabs();
+
+            // Wire up tab buttons
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchTab(btn.dataset.tab);
+                });
+            });
+
+            switchTab(currentTab);
+        }
+
+        function organizeIntoTabs() {
+            // Collect all elements with data-mobile-tab
+            const taggedElements = document.querySelectorAll('[data-mobile-tab]');
+            const movedElements = new Set();
+
+            taggedElements.forEach(el => {
+                const tabName = el.dataset.mobilTab || el.getAttribute('data-mobile-tab');
+                const panel = document.getElementById('mob-panel-' + tabName);
+                if (panel && !movedElements.has(el)) {
+                    panel.appendChild(el);
+                    movedElements.add(el);
+                }
+            });
+
+            // Move results-panel children (not the panel itself) into results tab
+            const resultsPanel = document.getElementById('results-panel');
+            const resultsTab = document.getElementById('mob-panel-results');
+            if (resultsPanel && resultsTab) {
+                // Move all children of results-panel into the results tab panel
+                while (resultsPanel.firstChild) {
+                    resultsTab.appendChild(resultsPanel.firstChild);
+                }
+                // Keep the results panel in DOM but empty (calculator.js might reference it)
+            }
+
+            // Move reference section into reference tab
+            const refSection = document.querySelector('.reference-section[data-mobile-tab="reference"]');
+            const refTab = document.getElementById('mob-panel-reference');
+            if (refSection && refTab) {
+                refTab.appendChild(refSection);
+            }
+
+            // Move footer into reference tab too
+            const footer = document.querySelector('.footer');
+            if (footer && refTab) {
+                refTab.appendChild(footer);
+            }
+
+            // Add step indicators and page titles
+            addTabHeaders();
+
+            // Add a calculate button to each input tab
+            addCalcButtons();
+
+            // Hide the old calculator grid and main content wrapper on mobile
+            const calcGrid = document.querySelector('.calculator-grid');
+            if (calcGrid) calcGrid.style.display = 'none';
+        }
+
+        function addTabHeaders() {
+            const headers = {
+                profile: { title: 'Taxpayer Profile', subtitle: 'Your category determines the tax-free income threshold', step: 1 },
+                salary: { title: 'Salary & Income', subtitle: 'Enter July & Aug-June salaries, bonuses, and other income', step: 2 },
+                invest: { title: 'Tax-Saving Investments', subtitle: 'All NBR-approved investment categories for rebate calculation', step: 3 },
+                results: { title: 'Tax Results', subtitle: 'Your complete tax computation breakdown', step: null },
+                reference: { title: 'NBR Reference', subtitle: 'FY 2025-26 tax rules, slabs, and filing guidelines', step: null }
+            };
+
+            TAB_ORDER.forEach(tabName => {
+                const panel = document.getElementById('mob-panel-' + tabName);
+                if (!panel) return;
+                const h = headers[tabName];
+
+                // Don't add if already added
+                if (panel.querySelector('.mob-tab-page-title')) return;
+
+                const headerHTML = document.createElement('div');
+                let html = '';
+
+                if (h.step) {
+                    html += `<div class="mob-step-indicator">
+                        <div class="mob-step-number">${h.step}</div>
+                        <div class="mob-step-text"><strong>Step ${h.step} of 3</strong>${h.subtitle}</div>
+                    </div>`;
+                }
+
+                html += `<div class="mob-tab-page-title">${h.title}</div>`;
+                if (!h.step) {
+                    html += `<div class="mob-tab-page-subtitle">${h.subtitle}</div>`;
+                }
+
+                headerHTML.innerHTML = html;
+
+                // Insert at beginning
+                panel.insertBefore(headerHTML, panel.firstChild);
+            });
+        }
+
+        function addCalcButtons() {
+            ['profile', 'salary', 'invest'].forEach(tabName => {
+                const panel = document.getElementById('mob-panel-' + tabName);
+                if (!panel || panel.querySelector('.mob-calc-btn-wrap')) return;
+
+                const wrap = document.createElement('div');
+                wrap.className = 'mob-calc-btn-wrap';
+
+                const nextTabMap = { profile: 'salary', salary: 'invest', invest: 'results' };
+                const nextLabel = { profile: 'Next: Salary →', salary: 'Next: Investments →', invest: 'Calculate & View Results →' };
+
+                wrap.innerHTML = `
+                    <button class="calc-btn" type="button" onclick="calculate(); if(typeof switchTab==='function') switchTab('${nextTabMap[tabName]}');">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            ${tabName === 'invest'
+                                ? '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/>'
+                                : '<polyline points="9 18 15 12 9 6"/>'
+                            }
+                        </svg>
+                        ${nextLabel[tabName]}
+                    </button>
+                `;
+                panel.appendChild(wrap);
+            });
+        }
+
+        // Global function so calc buttons can call it
+        window.switchTab = function(tabName) {
+            if (!isMobile) return;
+            if (TAB_ORDER.indexOf(tabName) === -1) return;
+
+            currentTab = tabName;
+
+            // Update tab buttons
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+
+            // Update tab panels
+            document.querySelectorAll('.mob-tab-panel').forEach(panel => {
+                const isActive = panel.id === 'mob-panel-' + tabName;
+                panel.classList.toggle('active', isActive);
+                if (isActive) {
+                    // Re-trigger animation
+                    panel.style.animation = 'none';
+                    panel.offsetHeight; // reflow
+                    panel.style.animation = '';
+                }
+            });
+
+            // Scroll to top of content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // Update mobile summary card (called from calculator.js)
+        window.updateMobileSummary = function({ finalPayable, grossTax, investRebate, earlyFilingRebate, officePaidTax, netTax }) {
+            if (!isMobile) return;
+            const fmt = typeof formatTaka === 'function' ? formatTaka : (n) => '৳' + Math.round(n).toLocaleString('en-IN');
+
+            const el = (id) => document.getElementById(id);
+            const set = (id, val) => { const e = el(id); if (e) e.textContent = val; };
+
+            set('mob-final-tax', fmt(finalPayable));
+            set('mob-office-tax', fmt(officePaidTax));
+            set('mob-gross-tax', fmt(grossTax));
+            set('mob-rebate', fmt((investRebate || 0) + (earlyFilingRebate || 0)));
+            set('mob-net-tax', fmt(netTax));
+        };
+
+        // Teardown for resize back to desktop
+        function teardownMobile() {
+            if (!mobileInitialized) return;
+
+            // This is complex — for simplicity, we'll just reload on resize to desktop
+            // Most users won't resize; this is mainly for dev testing
+        }
+
+        // Handle viewport changes
+        function handleResize() {
+            const wasMobile = isMobile;
+            isMobile = window.innerWidth <= MOB_BREAKPOINT;
+
+            if (isMobile && !wasMobile) {
+                // Switched to mobile
+                if (!mobileInitialized) {
+                    initMobile();
+                }
+            } else if (!isMobile && wasMobile && mobileInitialized) {
+                // Switched to desktop — reload to restore layout
+                location.reload();
+            }
+        }
+
+        // Initialize
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                if (isMobile) initMobile();
+            });
+        } else {
+            if (isMobile) initMobile();
+        }
+
+        // Debounced resize listener
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(handleResize, 250);
+        });
+    })();
     </script>
 </body>
 </html>

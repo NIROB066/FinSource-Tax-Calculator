@@ -306,6 +306,9 @@ function calculate() {
     updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
     updateMinTaxCard(minTaxApplied, areaType, grossTax, investRebate, minimumTax);
     updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice });
+
+    // Update mobile floating summary card (if on mobile)
+    if (typeof updateMobileSummary === 'function') updateMobileSummary({ finalPayable, grossTax, investRebate, earlyFilingRebate, officePaidTax, netTax });
 }
 
 // Mark PF field as manually overridden if user types in it

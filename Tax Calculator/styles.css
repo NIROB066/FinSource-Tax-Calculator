@@ -1488,6 +1488,7 @@ body {
     body {
         padding-top: 0;
         padding-bottom: 72px; /* space for bottom bar */
+        -webkit-overflow-scrolling: touch;
     }
 
     /* ── Compact header ── */
@@ -1504,14 +1505,15 @@ body {
     /* ── Mobile Floating Tax Summary Card ── */
     #mobile-tax-summary {
         display: block;
+        position: -webkit-sticky;
         position: sticky;
         top: 49px; /* below compact header */
         z-index: 90;
         margin: 0;
         padding: 12px 16px;
         background: rgba(10, 22, 40, 0.88);
-        backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
+        backdrop-filter: blur(24px);
         border-bottom: 1px solid rgba(16, 185, 129, 0.2);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
@@ -1591,6 +1593,7 @@ body {
 
     /* ── Mobile Bottom Tab Bar ── */
     #mobile-tab-bar {
+        display: -webkit-flex;
         display: flex;
         position: fixed;
         bottom: 0;
@@ -1598,12 +1601,15 @@ body {
         right: 0;
         z-index: 200;
         background: rgba(5, 12, 20, 0.92);
-        backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
+        backdrop-filter: blur(24px);
         border-top: 1px solid rgba(26, 48, 80, 0.6);
         padding: 6px 4px;
+        padding-bottom: calc(6px + constant(safe-area-inset-bottom));
         padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+        -webkit-justify-content: space-around;
         justify-content: space-around;
+        -webkit-align-items: center;
         align-items: center;
         box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
     }
@@ -1666,6 +1672,7 @@ body {
     /* ── Tab Content Panels ── */
     .mob-tab-panel {
         display: none;
+        -webkit-animation: mobTabFadeIn 0.3s ease forwards;
         animation: mobTabFadeIn 0.3s ease forwards;
     }
 
@@ -1673,15 +1680,22 @@ body {
         display: block;
     }
 
+    @-webkit-keyframes mobTabFadeIn {
+        from { opacity: 0; -webkit-transform: translateY(8px); transform: translateY(8px); }
+        to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+    }
+
     @keyframes mobTabFadeIn {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; -webkit-transform: translateY(8px); transform: translateY(8px); }
+        to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
     }
 
     /* ── Tab content wrapper ── */
     #mobile-tab-content {
         padding: 12px 16px;
         min-height: calc(100vh - 200px);
+        min-height: calc(100dvh - 200px);
+        -webkit-overflow-scrolling: touch;
     }
 
     /* ── Section card improvements for mobile ── */

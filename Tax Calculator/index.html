@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Bangladesh Income Tax Calculator 2025-26 | FinSource | NBR Compliant</title>
     <meta name="description" content="Bangladesh income tax calculator FY 2025-26 with monthly salary breakdown, TDS schedule, investment rebate chart, and all NBR rules.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -680,7 +680,7 @@
                         </div>
 
                         <!-- Provident Fund Summary -->
-                        <div class="pf-summary-box" data-mobile-tab="salary">
+                        <div class="pf-summary-box">
                             <div class="pf-title">Provident Fund</div>
                             <div class="pf-grid">
                                 <div class="pf-item">Your Contribution (6%) + Office (6%)<strong id="pf-employee">৳0</strong></div>
@@ -691,7 +691,7 @@
                         <!-- Breakdown UI removed per FinSource rules -->
 
                         <!-- Income Summary -->
-                        <div class="income-summary-box" data-mobile-tab="salary" style="margin-top:14px">
+                        <div class="income-summary-box" style="margin-top:14px">
                             <div class="isb-item">
                                 <div class="isb-label">Annual Gross</div>
                                 <div class="isb-value" id="strip-gross">৳0</div>
@@ -1263,27 +1263,26 @@
     (function() {
         'use strict';
 
-        const MOB_BREAKPOINT = 768;
-        let isMobile = window.innerWidth <= MOB_BREAKPOINT;
-        let currentTab = 'profile';
-        let mobileInitialized = false;
+        var MOB_BREAKPOINT = 768;
+        var isMobile = window.innerWidth <= MOB_BREAKPOINT;
+        var currentTab = 'profile';
+        var mobileInitialized = false;
 
-        // Tab definitions: which data-mobile-tab values belong to each tab
-        const TAB_ORDER = ['profile', 'salary', 'invest', 'results', 'reference'];
+        // Tab definitions
+        var TAB_ORDER = ['profile', 'salary', 'invest', 'results', 'reference'];
 
         function initMobile() {
             if (mobileInitialized) return;
             mobileInitialized = true;
 
-            // Create the tab content wrapper
-            const mainContent = document.querySelector('.main-content');
+            var mainContent = document.querySelector('.main-content');
             if (!mainContent) return;
 
-            const container = mainContent.querySelector('.container');
+            var container = mainContent.querySelector('.container');
             if (!container) return;
 
             // Create tab content container
-            let tabContent = document.getElementById('mobile-tab-content');
+            var tabContent = document.getElementById('mobile-tab-content');
             if (!tabContent) {
                 tabContent = document.createElement('div');
                 tabContent.id = 'mobile-tab-content';
@@ -1291,63 +1290,88 @@
             }
 
             // Create tab panels
-            TAB_ORDER.forEach(tabName => {
-                let panel = document.getElementById('mob-panel-' + tabName);
+            for (var i = 0; i < TAB_ORDER.length; i++) {
+                var tabName = TAB_ORDER[i];
+                var panel = document.getElementById('mob-panel-' + tabName);
                 if (!panel) {
                     panel = document.createElement('div');
                     panel.id = 'mob-panel-' + tabName;
                     panel.className = 'mob-tab-panel' + (tabName === currentTab ? ' active' : '');
                     tabContent.appendChild(panel);
                 }
-            });
+            }
 
             // Move sections into their tab panels
             organizeIntoTabs();
 
             // Wire up tab buttons
-            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    switchTab(btn.dataset.tab);
-                });
-            });
+            var btns = document.querySelectorAll('.mob-tab-btn');
+            for (var b = 0; b < btns.length; b++) {
+                (function(btn) {
+                    btn.addEventListener('click', function() {
+                        switchTab(btn.getAttribute('data-tab'));
+                    });
+                })(btns[b]);
+            }
 
             switchTab(currentTab);
         }
 
         function organizeIntoTabs() {
-            // Collect all elements with data-mobile-tab
-            const taggedElements = document.querySelectorAll('[data-mobile-tab]');
-            const movedElements = new Set();
+            // Only move TOP-LEVEL tagged elements (not children of already-tagged parents)
+            var taggedElements = document.querySelectorAll('[data-mobile-tab]');
+            var movedElements = [];
 
-            taggedElements.forEach(el => {
-                const tabName = el.dataset.mobilTab || el.getAttribute('data-mobile-tab');
-                const panel = document.getElementById('mob-panel-' + tabName);
-                if (panel && !movedElements.has(el)) {
+            for (var i = 0; i < taggedElements.length; i++) {
+                var el = taggedElements[i];
+                var tabName = el.getAttribute('data-mobile-tab');
+
+                // Skip if this element is inside another element that has data-mobile-tab
+                // (prevents ripping children out of their parent)
+                var parent = el.parentElement;
+                var isNested = false;
+                while (parent) {
+                    if (parent.hasAttribute && parent.hasAttribute('data-mobile-tab')) {
+                        isNested = true;
+                        break;
+                    }
+                    parent = parent.parentElement;
+                }
+                if (isNested) continue;
+
+                // Skip the results-panel — we handle it specially below
+                if (el.id === 'results-panel') continue;
+
+                var panel = document.getElementById('mob-panel-' + tabName);
+                if (panel) {
                     panel.appendChild(el);
-                    movedElements.add(el);
+                    movedElements.push(el);
                 }
-            });
+            }
 
-            // Move results-panel children (not the panel itself) into results tab
-            const resultsPanel = document.getElementById('results-panel');
-            const resultsTab = document.getElementById('mob-panel-results');
+            // Move results-panel contents into the results tab
+            var resultsPanel = document.getElementById('results-panel');
+            var resultsTab = document.getElementById('mob-panel-results');
             if (resultsPanel && resultsTab) {
-                // Move all children of results-panel into the results tab panel
-                while (resultsPanel.firstChild) {
-                    resultsTab.appendChild(resultsPanel.firstChild);
+                // Move children, not the panel itself (calculator.js updates by ID)
+                var children = [];
+                for (var c = 0; c < resultsPanel.childNodes.length; c++) {
+                    children.push(resultsPanel.childNodes[c]);
                 }
-                // Keep the results panel in DOM but empty (calculator.js might reference it)
+                for (var j = 0; j < children.length; j++) {
+                    resultsTab.appendChild(children[j]);
+                }
             }
 
             // Move reference section into reference tab
-            const refSection = document.querySelector('.reference-section[data-mobile-tab="reference"]');
-            const refTab = document.getElementById('mob-panel-reference');
+            var refSection = document.querySelector('.reference-section[data-mobile-tab="reference"]');
+            var refTab = document.getElementById('mob-panel-reference');
             if (refSection && refTab) {
                 refTab.appendChild(refSection);
             }
 
-            // Move footer into reference tab too
-            const footer = document.querySelector('.footer');
+            // Move footer into reference tab
+            var footer = document.querySelector('.footer');
             if (footer && refTab) {
                 refTab.appendChild(footer);
             }
@@ -1355,16 +1379,16 @@
             // Add step indicators and page titles
             addTabHeaders();
 
-            // Add a calculate button to each input tab
+            // Add navigation buttons to each input tab
             addCalcButtons();
 
-            // Hide the old calculator grid and main content wrapper on mobile
-            const calcGrid = document.querySelector('.calculator-grid');
+            // Hide the old calculator grid
+            var calcGrid = document.querySelector('.calculator-grid');
             if (calcGrid) calcGrid.style.display = 'none';
         }
 
         function addTabHeaders() {
-            const headers = {
+            var headers = {
                 profile: { title: 'Taxpayer Profile', subtitle: 'Your category determines the tax-free income threshold', step: 1 },
                 salary: { title: 'Salary & Income', subtitle: 'Enter July & Aug-June salaries, bonuses, and other income', step: 2 },
                 invest: { title: 'Tax-Saving Investments', subtitle: 'All NBR-approved investment categories for rebate calculation', step: 3 },
@@ -1372,63 +1396,69 @@
                 reference: { title: 'NBR Reference', subtitle: 'FY 2025-26 tax rules, slabs, and filing guidelines', step: null }
             };
 
-            TAB_ORDER.forEach(tabName => {
-                const panel = document.getElementById('mob-panel-' + tabName);
-                if (!panel) return;
-                const h = headers[tabName];
+            for (var i = 0; i < TAB_ORDER.length; i++) {
+                var tabName = TAB_ORDER[i];
+                var panel = document.getElementById('mob-panel-' + tabName);
+                if (!panel) continue;
+                var h = headers[tabName];
 
                 // Don't add if already added
-                if (panel.querySelector('.mob-tab-page-title')) return;
+                if (panel.querySelector('.mob-tab-page-title')) continue;
 
-                const headerHTML = document.createElement('div');
-                let html = '';
+                var headerEl = document.createElement('div');
+                var html = '';
 
                 if (h.step) {
-                    html += `<div class="mob-step-indicator">
-                        <div class="mob-step-number">${h.step}</div>
-                        <div class="mob-step-text"><strong>Step ${h.step} of 3</strong>${h.subtitle}</div>
-                    </div>`;
+                    html += '<div class="mob-step-indicator">' +
+                        '<div class="mob-step-number">' + h.step + '</div>' +
+                        '<div class="mob-step-text"><strong>Step ' + h.step + ' of 3</strong>' + h.subtitle + '</div>' +
+                    '</div>';
                 }
 
-                html += `<div class="mob-tab-page-title">${h.title}</div>`;
+                html += '<div class="mob-tab-page-title">' + h.title + '</div>';
                 if (!h.step) {
-                    html += `<div class="mob-tab-page-subtitle">${h.subtitle}</div>`;
+                    html += '<div class="mob-tab-page-subtitle">' + h.subtitle + '</div>';
                 }
 
-                headerHTML.innerHTML = html;
-
-                // Insert at beginning
-                panel.insertBefore(headerHTML, panel.firstChild);
-            });
+                headerEl.innerHTML = html;
+                panel.insertBefore(headerEl, panel.firstChild);
+            }
         }
 
         function addCalcButtons() {
-            ['profile', 'salary', 'invest'].forEach(tabName => {
-                const panel = document.getElementById('mob-panel-' + tabName);
-                if (!panel || panel.querySelector('.mob-calc-btn-wrap')) return;
+            var tabs = ['profile', 'salary', 'invest'];
+            var nextTabMap = { profile: 'salary', salary: 'invest', invest: 'results' };
+            var nextLabel = { profile: 'Next: Salary \u2192', salary: 'Next: Investments \u2192', invest: 'Calculate & View Results \u2192' };
 
-                const wrap = document.createElement('div');
+            for (var i = 0; i < tabs.length; i++) {
+                var tabName = tabs[i];
+                var panel = document.getElementById('mob-panel-' + tabName);
+                if (!panel || panel.querySelector('.mob-calc-btn-wrap')) continue;
+
+                var wrap = document.createElement('div');
                 wrap.className = 'mob-calc-btn-wrap';
 
-                const nextTabMap = { profile: 'salary', salary: 'invest', invest: 'results' };
-                const nextLabel = { profile: 'Next: Salary →', salary: 'Next: Investments →', invest: 'Calculate & View Results →' };
+                var svgContent = tabName === 'invest'
+                    ? '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/>'
+                    : '<polyline points="9 18 15 12 9 6"/>';
 
-                wrap.innerHTML = `
-                    <button class="calc-btn" type="button" onclick="calculate(); if(typeof switchTab==='function') switchTab('${nextTabMap[tabName]}');">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            ${tabName === 'invest'
-                                ? '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/>'
-                                : '<polyline points="9 18 15 12 9 6"/>'
-                            }
-                        </svg>
-                        ${nextLabel[tabName]}
-                    </button>
-                `;
+                var btn = document.createElement('button');
+                btn.className = 'calc-btn';
+                btn.type = 'button';
+                btn.setAttribute('data-next-tab', nextTabMap[tabName]);
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' + svgContent + '</svg> ' + nextLabel[tabName];
+                btn.addEventListener('click', function() {
+                    calculate();
+                    var next = this.getAttribute('data-next-tab');
+                    if (next) switchTab(next);
+                });
+
+                wrap.appendChild(btn);
                 panel.appendChild(wrap);
-            });
+            }
         }
 
-        // Global function so calc buttons can call it
+        // Global function so it can be called from anywhere
         window.switchTab = function(tabName) {
             if (!isMobile) return;
             if (TAB_ORDER.indexOf(tabName) === -1) return;
@@ -1436,77 +1466,88 @@
             currentTab = tabName;
 
             // Update tab buttons
-            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.tab === tabName);
-            });
+            var btns = document.querySelectorAll('.mob-tab-btn');
+            for (var i = 0; i < btns.length; i++) {
+                var isActive = btns[i].getAttribute('data-tab') === tabName;
+                if (isActive) {
+                    btns[i].classList.add('active');
+                } else {
+                    btns[i].classList.remove('active');
+                }
+            }
 
             // Update tab panels
-            document.querySelectorAll('.mob-tab-panel').forEach(panel => {
-                const isActive = panel.id === 'mob-panel-' + tabName;
-                panel.classList.toggle('active', isActive);
-                if (isActive) {
+            var panels = document.querySelectorAll('.mob-tab-panel');
+            for (var j = 0; j < panels.length; j++) {
+                var panelActive = panels[j].id === 'mob-panel-' + tabName;
+                if (panelActive) {
+                    panels[j].className = 'mob-tab-panel active';
                     // Re-trigger animation
-                    panel.style.animation = 'none';
-                    panel.offsetHeight; // reflow
-                    panel.style.animation = '';
+                    panels[j].style.webkitAnimation = 'none';
+                    panels[j].style.animation = 'none';
+                    void panels[j].offsetHeight; // force reflow
+                    panels[j].style.webkitAnimation = '';
+                    panels[j].style.animation = '';
+                } else {
+                    panels[j].className = 'mob-tab-panel';
                 }
-            });
+            }
 
-            // Scroll to top of content
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to top
+            window.scrollTo(0, 0);
         };
 
         // Update mobile summary card (called from calculator.js)
-        window.updateMobileSummary = function({ finalPayable, grossTax, investRebate, earlyFilingRebate, officePaidTax, netTax }) {
+        window.updateMobileSummary = function(data) {
             if (!isMobile) return;
-            const fmt = typeof formatTaka === 'function' ? formatTaka : (n) => '৳' + Math.round(n).toLocaleString('en-IN');
+            var fmt = typeof formatTaka === 'function' ? formatTaka : function(n) { return '\u09F3' + Math.round(n); };
 
-            const el = (id) => document.getElementById(id);
-            const set = (id, val) => { const e = el(id); if (e) e.textContent = val; };
+            function setEl(id, val) {
+                var e = document.getElementById(id);
+                if (e) e.textContent = val;
+            }
 
-            set('mob-final-tax', fmt(finalPayable));
-            set('mob-office-tax', fmt(officePaidTax));
-            set('mob-gross-tax', fmt(grossTax));
-            set('mob-rebate', fmt((investRebate || 0) + (earlyFilingRebate || 0)));
-            set('mob-net-tax', fmt(netTax));
+            setEl('mob-final-tax', fmt(data.finalPayable));
+            setEl('mob-office-tax', fmt(data.officePaidTax));
+            setEl('mob-gross-tax', fmt(data.grossTax));
+            setEl('mob-rebate', fmt((data.investRebate || 0) + (data.earlyFilingRebate || 0)));
+            setEl('mob-net-tax', fmt(data.netTax));
         };
-
-        // Teardown for resize back to desktop
-        function teardownMobile() {
-            if (!mobileInitialized) return;
-
-            // This is complex — for simplicity, we'll just reload on resize to desktop
-            // Most users won't resize; this is mainly for dev testing
-        }
 
         // Handle viewport changes
         function handleResize() {
-            const wasMobile = isMobile;
+            var wasMobile = isMobile;
             isMobile = window.innerWidth <= MOB_BREAKPOINT;
 
-            if (isMobile && !wasMobile) {
-                // Switched to mobile
-                if (!mobileInitialized) {
-                    initMobile();
-                }
+            if (isMobile && !wasMobile && !mobileInitialized) {
+                initMobile();
             } else if (!isMobile && wasMobile && mobileInitialized) {
-                // Switched to desktop — reload to restore layout
+                // Reload to restore desktop layout
                 location.reload();
             }
         }
 
-        // Initialize
+        // CRITICAL FIX for Safari: Always use DOMContentLoaded + setTimeout(0)
+        // This ensures our code runs AFTER the existing collapsible section setup
+        // Safari may report readyState as 'interactive' at end-of-body scripts,
+        // which would cause initMobile() to run before other DOMContentLoaded handlers.
+        function scheduleInit() {
+            if (isMobile) {
+                // setTimeout(0) defers to after all current DOMContentLoaded handlers
+                setTimeout(function() { initMobile(); }, 0);
+            }
+        }
+
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                if (isMobile) initMobile();
-            });
+            document.addEventListener('DOMContentLoaded', scheduleInit);
         } else {
-            if (isMobile) initMobile();
+            // DOM already parsed — still defer to be safe
+            scheduleInit();
         }
 
         // Debounced resize listener
-        let resizeTimer;
-        window.addEventListener('resize', () => {
+        var resizeTimer;
+        window.addEventListener('resize', function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(handleResize, 250);
         });

@@ -1,17 +1,33 @@
 {
+  "id": "./index.html",
   "name": "FinSource Tax Calculator",
   "short_name": "Tax Calc",
   "description": "Bangladesh Income Tax Calculator FY 2025-26",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
   "background_color": "#050c14",
   "theme_color": "#10b981",
+  "categories": ["finance", "productivity", "utilities"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon.png",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Calculator",
+      "short_name": "Calculator",
+      "description": "Launch the FinSource tax calculator",
+      "url": "./index.html"
     }
   ]
 }

@@ -150,6 +150,12 @@ function calculate() {
     const augGross  = getVal('aug-gross');
     const augMonths = parseInt(document.getElementById('aug-months')?.value) || 11;
 
+    // Extra Days Salary: (Aug-June salary / 30) * days
+    const extraDaysCount = parseInt(document.getElementById('extra-days-count')?.value) || 16;
+    const extraDaysSalary = Math.round((augGross / 30) * extraDaysCount);
+    const extraDaysEl = document.getElementById('extra-days-salary');
+    if (extraDaysEl) extraDaysEl.value = extraDaysSalary || '';
+
     // Update Aug card subtitle dynamically
     const augLbl = document.getElementById('aug-months-label');
     if (augLbl) augLbl.textContent = augMonths;
@@ -170,7 +176,7 @@ function calculate() {
     const C = TAX_CONFIG;
     
     // Total Salary (No breakdown counted for total)
-    const totalSalary = julyGross + (augGross * augMonths);
+    const totalSalary = julyGross + (augGross * augMonths) + extraDaysSalary;
     const annGrossSalary = totalSalary + festivalBonusAmt + perfBonusAmt;
     
     // Basic is only used to calculate Office Paid Tax and PF
@@ -297,7 +303,7 @@ function calculate() {
     if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic Salary: ৳${formatTaka(annBasic)})`;
     document.getElementById('office-slab-container').style.display = 'block';
     updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS: Math.min(getVal('inv-dps'), C.DPS_ANNUAL_LIMIT), invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
-    updateComputationTable({ totalSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
+    updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
     updateMinTaxCard(minTaxApplied, areaType, grossTax, investRebate, minimumTax);
     updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice });
 }
@@ -619,14 +625,15 @@ function updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, 
 }
 
 
-function updateComputationTable({ totalSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
+function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
     const container = document.getElementById('computation-table');
     if (!container) return;
     container.innerHTML = '';
 
     const rows = [
         { label: 'A. INCOME COMPUTATION', isHeader: true },
-        { label: 'Total Base Salary (Annual)', value: totalSalary },
+        { label: 'Total Base Salary (Annual)', value: totalSalary - extraDaysSalary },
+        { label: 'Extra Days Salary', value: extraDaysSalary, indent: true },
         { label: 'Festival Bonuses', value: festivalBonusAmt, indent: true },
         { label: 'Performance Bonuses', value: perfBonusAmt, indent: true },
         { label: 'Total Salary Income', value: annGrossSalary, isSubtotal: true },
@@ -848,6 +855,8 @@ function resetForm() {
     document.getElementById('taxpayer-type').value = 'general';
     document.getElementById('area-type').value     = 'dhaka_ctg';
     document.getElementById('filing-quarter').value= 'q2';
+    const extraDaysEl = document.getElementById('extra-days-count');
+    if (extraDaysEl) extraDaysEl.value = '16';
     const augMonthsEl = document.getElementById('aug-months');
     if (augMonthsEl) augMonthsEl.value = '11';
     const festCountEl = document.getElementById('festival-bonus-count');

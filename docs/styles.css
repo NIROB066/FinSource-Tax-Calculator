@@ -294,7 +294,7 @@ body {
 }
 
 .calculator-grid {
-    display: grid;
+    display: none; /* Replaced by wizard-section flow */
     grid-template-columns: minmax(0, 1.06fr) minmax(340px, 0.94fr);
     gap: 24px;
     align-items: start;
@@ -1490,6 +1490,12 @@ body {
         gap: 0 !important;
     }
 
+    /* On mobile the fixed bottom bar replaces wizard-nav */
+    .wizard-nav { display: none !important; }
+    .wizard-step-intro { display: none; } /* Mobile uses addTabHeaders() instead */
+    /* On mobile, wizard-sections don't control visibility — the mob-tab-panel does */
+    .wizard-section { display: block !important; }
+
     /* ── Body adjustments for fixed elements ── */
     body {
         padding-top: 0;
@@ -1629,19 +1635,28 @@ body {
     }
 
     .mob-tab-btn {
+        display: -webkit-flex;
         display: flex;
+        -webkit-flex-direction: column;
         flex-direction: column;
+        -webkit-align-items: center;
         align-items: center;
-        gap: 2px;
-        padding: 4px 8px;
+        -webkit-justify-content: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 6px 4px;
         border: none;
         background: transparent;
         color: var(--text-muted);
         cursor: pointer;
         transition: color 0.2s, transform 0.2s;
         -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;  /* removes 300ms tap delay on iOS Safari */
+        -webkit-appearance: none;
         position: relative;
-        min-width: 56px;
+        -webkit-flex: 1;
+        flex: 1;
+        min-height: 48px;            /* Apple HIG minimum touch target */
         font-family: inherit;
     }
 
@@ -1686,22 +1701,36 @@ body {
     /* ── Tab Content Panels ── */
     .mob-tab-panel {
         display: none;
-        -webkit-animation: mobTabFadeIn 0.3s ease forwards;
-        animation: mobTabFadeIn 0.3s ease forwards;
     }
 
     .mob-tab-panel.active {
         display: block;
     }
 
-    @-webkit-keyframes mobTabFadeIn {
-        from { opacity: 0; -webkit-transform: translateY(8px); transform: translateY(8px); }
-        to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+    /* Directional slide animations — class added by switchTab() based on navigation direction */
+    @-webkit-keyframes mobSlideFromRight {
+        from { opacity: 0; -webkit-transform: translateX(28px); transform: translateX(28px); }
+        to   { opacity: 1; -webkit-transform: translateX(0);   transform: translateX(0); }
     }
-
-    @keyframes mobTabFadeIn {
-        from { opacity: 0; -webkit-transform: translateY(8px); transform: translateY(8px); }
-        to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+    @keyframes mobSlideFromRight {
+        from { opacity: 0; transform: translateX(28px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    @-webkit-keyframes mobSlideFromLeft {
+        from { opacity: 0; -webkit-transform: translateX(-28px); transform: translateX(-28px); }
+        to   { opacity: 1; -webkit-transform: translateX(0);    transform: translateX(0); }
+    }
+    @keyframes mobSlideFromLeft {
+        from { opacity: 0; transform: translateX(-28px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    .mob-tab-panel.slide-from-right {
+        -webkit-animation: mobSlideFromRight 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation: mobSlideFromRight 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .mob-tab-panel.slide-from-left {
+        -webkit-animation: mobSlideFromLeft 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation: mobSlideFromLeft 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
 
     /* ── Tab content wrapper ── */
@@ -1802,13 +1831,20 @@ body {
         font-size: 13px;
     }
 
-    /* ── Mobile Next button: fills from bottom with gradient so no gap above tab bar ── */
+    /* ── Mobile nav buttons: Back + Next side by side with gradient fill ── */
     .mob-calc-btn-wrap {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         z-index: 180;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-align-items: center;
+        align-items: center;
+        -webkit-justify-content: space-between;
+        justify-content: space-between;
+        gap: 10px;
         padding: 10px 12px;
         /* Space for tab bar + safe area, with old-Safari constant() fallback */
         padding-bottom: calc(62px + constant(safe-area-inset-bottom));
@@ -1821,12 +1857,26 @@ body {
         transform: translateZ(0);
     }
 
-    .mob-calc-btn-wrap .calc-btn {
+    .mob-calc-btn-wrap .calc-btn,
+    .mob-calc-btn-wrap .wizard-nav-btn {
         pointer-events: all;
+    }
+
+    .mob-calc-btn-wrap .calc-btn {
+        -webkit-flex: 1;
+        flex: 1;
         box-shadow: 0 4px 24px rgba(16, 185, 129, 0.45);
         border-radius: 14px;
         padding: 14px;
         font-size: 15px;
+    }
+
+    .mob-calc-btn-wrap .wizard-nav-btn.btn-back {
+        -webkit-flex: 0 0 auto;
+        flex: 0 0 auto;
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 14px;
     }
 
     /* Add bottom padding to panels so content isn't hidden behind fixed button */
@@ -2001,6 +2051,251 @@ body {
 }
 
 /* ===========================
+   Required / Optional Badges
+   =========================== */
+.badge-required {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: var(--accent-green);
+    vertical-align: middle;
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+.badge-optional {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.25);
+    color: var(--accent-amber);
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* ===========================
+   Wizard Progress Bar & Navigation
+   — Unified step-by-step flow for both mobile and desktop
+   =========================== */
+.wizard-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 16px 24px;
+    max-width: 700px;
+    margin: 0 auto 8px;
+}
+.wizard-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 20px;
+    transition: background 0.2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+.wizard-step:hover { background: rgba(255,255,255,0.04); }
+.wizard-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    border: 2px solid var(--border);
+    color: var(--text-muted);
+    background: transparent;
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+.wizard-step.active .wizard-step-num {
+    background: var(--gradient-green);
+    border-color: var(--accent-green);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(16,185,129,0.3);
+}
+.wizard-step.completed .wizard-step-num {
+    background: rgba(16,185,129,0.15);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+.wizard-step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+    transition: color 0.2s;
+}
+.wizard-step.active .wizard-step-label { color: var(--text-primary); }
+.wizard-step.completed .wizard-step-label { color: var(--accent-green); }
+.wizard-step-connector {
+    width: 32px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.3s;
+    flex-shrink: 0;
+}
+.wizard-step-connector.done { background: var(--accent-green); }
+
+/* ── Wizard Navigation Bar ── */
+.wizard-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 0 8px;
+    margin-top: 14px;
+    border-top: 1px solid var(--border);
+}
+.wizard-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.wizard-nav-btn.btn-back {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+.wizard-nav-btn.btn-back:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+.wizard-nav-btn.btn-next {
+    background: var(--gradient-green);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.3);
+}
+.wizard-nav-btn.btn-next:hover { box-shadow: 0 6px 20px rgba(16,185,129,0.45); transform: translateY(-1px); }
+.wizard-nav-btn.btn-next:active { transform: translateY(0); }
+.wizard-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* ── Desktop Wizard Step Sections ── */
+.wizard-section { display: none; }
+.wizard-section.active { display: block; }
+.wizard-section .panel { overflow: visible; }
+
+/* ── Wizard Step Intro Text ── */
+.wizard-step-intro {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    background: rgba(16,185,129,0.05);
+    border: 1px solid rgba(16,185,129,0.15);
+    border-left: 4px solid var(--accent-green);
+    border-radius: 8px;
+}
+.wizard-step-intro h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+.wizard-step-intro p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Desktop wizard container ── */
+.wizard-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* On mobile, wizard-progress is hidden (bottom tab + swipe dots serve the same purpose) */
+@media (max-width: 768px) {
+    .wizard-progress { display: none; }
+    .wizard-nav { padding: 12px 0 4px; }
+    .wizard-nav-btn { padding: 10px 16px; font-size: 13px; }
+    .wizard-container { padding: 0; }
+}
+
+/* ── Light Mode overrides for wizard ── */
+body.light-mode .wizard-step:hover { background: rgba(0,0,0,0.03); }
+body.light-mode .wizard-nav-btn.btn-back { background: rgba(0,0,0,0.04); border-color: #e2e8f0; color: #334155; }
+body.light-mode .wizard-nav-btn.btn-back:hover { background: rgba(0,0,0,0.08); color: #0f172a; }
+body.light-mode .wizard-step-intro { background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.12); }
+
+/* ===========================
+   Addon Section Toggle (Bonuses, Extra Days, Other Income)
+   — collapsible in both mobile and desktop
+   =========================== */
+.addon-section-toggle {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1px dashed var(--border);
+    background: rgba(255,255,255,0.02);
+    cursor: pointer;
+    margin-top: 14px;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: border-color 0.2s, background 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.addon-section-toggle:active,
+.addon-section-toggle.open {
+    border-color: var(--accent-amber);
+    background: rgba(245,158,11,0.05);
+}
+.addon-toggle-left {
+    -webkit-flex: 1; flex: 1;
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    gap: 8px;
+    -webkit-flex-wrap: wrap; flex-wrap: wrap;
+}
+.addon-toggle-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+.addon-chevron {
+    color: var(--text-muted);
+    -webkit-transition: transform 0.25s; transition: transform 0.25s;
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+}
+.addon-section-toggle.open .addon-chevron {
+    -webkit-transform: rotate(180deg); transform: rotate(180deg);
+}
+.addon-section-body {
+    padding-top: 4px;
+}
+
+/* ===========================
    Theme Toggle Button
    =========================== */
 .theme-toggle-btn {
@@ -2129,6 +2424,11 @@ body.light-mode .hero-title {
 body.light-mode .slab-row {
     background: var(--bg-secondary);
     border-color: var(--border);
+}
+
+body.light-mode .slab-row.active {
+    background: rgba(5, 150, 105, 0.1);
+    border-color: rgba(5, 150, 105, 0.35);
 }
 
 body.light-mode .comp-row.header {

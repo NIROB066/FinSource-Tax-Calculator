@@ -1,0 +1,32 @@
+Key,Value,Description
+SALARY_BASIC_PCT,0.60,Basic salary percentage
+PF_EMPLOYEE_PCT,0.06,Provident fund employee share percentage
+PF_OFFICE_PCT,0.06,Provident fund office share percentage
+TAX_FREE_GENERAL,375000,Tax free limit for general individuals
+TAX_FREE_WOMEN_SENIOR,425000,Tax free limit for women & seniors
+TAX_FREE_DISABLED,500000,Tax free limit for disabled individuals
+TAX_FREE_THIRD_GENDER,500000,Tax free limit for third gender individuals
+TAX_FREE_FREEDOM_FIGHTER,525000,Tax free limit for freedom fighters
+DISABLED_CHILD_EXTRA,50000,Extra limit per disabled child
+MIN_TAX_DHAKA_CTG,5000,Minimum tax in Dhaka & Chittagong
+MIN_TAX_OTHER_CITY,4000,Minimum tax in other city corporations
+MIN_TAX_OUTSIDE,3000,Minimum tax outside city corporations
+REBATE_RATE,0.10,Investment rebate rate
+MAX_INV_INCOME_PCT,0.03,Max investment cap based on taxable income
+MAX_INV_ABSOLUTE,750000,Max investment absolute cap in Taka
+DPS_ANNUAL_LIMIT,120000,Max allowable DPS investment per year
+MAX_ALLOWANCE_EXEMPTION,450000,Consolidated allowance exemption limit
+ALLOWANCE_BASIC_PCT,0.3333333333,Consolidated allowance basic percentage limit (1/3)
+FESTIVAL_BONUS_COUNT,2,Number of festival bonuses per year
+FESTIVAL_BONUS_PCT,0.60,Percentage of monthly salary for each festival bonus
+PERF_BONUS_COUNT,2,Number of performance bonuses per year
+PERF_BONUS_PCT,0.20,Percentage of monthly salary for each performance bonus
+TAX_SLAB_1_LIMIT,300000,Limit for slab 1
+TAX_SLAB_1_RATE,0.10,Tax rate for slab 1
+TAX_SLAB_2_LIMIT,400000,Limit for slab 2
+TAX_SLAB_2_RATE,0.15,Tax rate for slab 2
+TAX_SLAB_3_LIMIT,500000,Limit for slab 3
+TAX_SLAB_3_RATE,0.20,Tax rate for slab 3
+TAX_SLAB_4_LIMIT,2000000,Limit for slab 4
+TAX_SLAB_4_RATE,0.25,Tax rate for slab 4
+TAX_SLAB_5_RATE,0.30,Tax rate for remaining slab (infinity)

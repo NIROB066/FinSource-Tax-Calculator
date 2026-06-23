@@ -1,0 +1,6 @@
+{
+  "appId": "com.finsource.taxcalculator",
+  "appName": "FinSource Tax Calc",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

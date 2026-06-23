@@ -511,6 +511,8 @@
     <main class="main-content">
         <div class="container wizard-container">
 
+            <div class="wizard-inputs-column">
+
             <!-- ═══ WIZARD STEP 1: Profile ═══ -->
             <div class="wizard-section active" id="wiz-step-1" data-mobile-tab="profile">
                 <div class="wizard-step-intro">
@@ -938,6 +940,10 @@
                 </div>
             </div><!-- /wiz-step-3 -->
 
+            </div><!-- /.wizard-inputs-column -->
+
+            <div class="wizard-results-column">
+
             <!-- ═══ WIZARD STEP 4: Results ═══ -->
             <div class="wizard-section" id="wiz-step-4" data-mobile-tab="results">
 
@@ -1085,6 +1091,12 @@
                 </div>
             </div><!-- /wiz-step-4 -->
 
+            </div><!-- /.wizard-results-column -->
+
+        </div><!-- /.wizard-container -->
+
+        <!-- Full-width Reference Section -->
+        <div class="container ref-container">
             <!-- ═══ WIZARD STEP 5: Reference ═══ -->
             <div class="wizard-section" id="wiz-step-5" data-mobile-tab="reference">
 
@@ -1156,7 +1168,7 @@
                 </div>
             </div><!-- /wiz-step-5 -->
 
-        </div><!-- /.wizard-container -->
+        </div><!-- /.ref-container -->
     </main>
 
     <!-- Footer -->
@@ -1320,22 +1332,6 @@
                 });
                 card.appendChild(body);
             });
-            // Collapse results-panel detail sections by default (not Step-by-Step)
-            const resultsPanel = document.getElementById('results-panel');
-            if (resultsPanel) {
-                const sectionCards = resultsPanel.querySelectorAll('.section-card');
-                sectionCards.forEach((card, i) => {
-                    // Collapse: Office Slab, Investment Chart, Full Computation, and Tax Slab (keep Step-by-Step open)
-                    if (i > 0) {
-                        const header = card.querySelector('.section-header, .section-header-sm');
-                        const body = card.querySelector('.section-body');
-                        if (header && body) {
-                            header.classList.add('collapsed');
-                            body.classList.add('collapsed');
-                        }
-                    }
-                });
-            }
         });
     </script>
 
@@ -1344,102 +1340,31 @@
     (function() {
         'use strict';
 
-        var WIZARD_STEPS = 5;
-        var currentWizStep = 1;
-        // Map wizard steps to mobile tab names for syncing
-        var STEP_TO_TAB = { 1: 'profile', 2: 'salary', 3: 'invest', 4: 'results', 5: 'reference' };
-        var TAB_TO_STEP = { profile: 1, salary: 2, invest: 3, results: 4, reference: 5 };
-
-        function updateProgressBar(step) {
-            for (var i = 1; i <= WIZARD_STEPS; i++) {
-                var stepEl = document.querySelector('.wizard-step[data-step="' + i + '"]');
-                if (!stepEl) continue;
-                stepEl.classList.remove('active', 'completed');
-                if (i === step) stepEl.classList.add('active');
-                else if (i < step) stepEl.classList.add('completed');
-            }
-            // Update connectors
-            for (var c = 1; c < WIZARD_STEPS; c++) {
-                var conn = document.getElementById('wiz-conn-' + c);
-                if (conn) {
-                    if (c < step) conn.classList.add('done');
-                    else conn.classList.remove('done');
-                }
-            }
-        }
-
-        function showWizardStep(step) {
-            if (step < 1 || step > WIZARD_STEPS) return;
-            currentWizStep = step;
-            // Show/hide sections
-            for (var i = 1; i <= WIZARD_STEPS; i++) {
-                var sec = document.getElementById('wiz-step-' + i);
-                if (!sec) continue;
-                if (i === step) sec.classList.add('active');
-                else sec.classList.remove('active');
-            }
-            updateProgressBar(step);
-            // Auto-calculate when reaching results and expand all sections
-            if (step === 4) {
-                if (typeof calculate === 'function') calculate();
-                // Expand all collapsed sections in the results panel
-                var resultsEl = document.getElementById('wiz-step-4');
-                if (resultsEl) {
-                    var headers = resultsEl.querySelectorAll('.section-header.collapsed, .section-header-sm.collapsed');
-                    for (var h = 0; h < headers.length; h++) {
-                        headers[h].classList.remove('collapsed');
-                    }
-                    var bodies = resultsEl.querySelectorAll('.section-body.collapsed');
-                    for (var b = 0; b < bodies.length; b++) {
-                        bodies[b].classList.remove('collapsed');
-                    }
-                }
-            }
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Global function called by buttons and progress bar clicks
         window.wizardGoTo = function(step) {
-            if (step < 1) step = 1;
-            if (step > WIZARD_STEPS) step = WIZARD_STEPS;
-            showWizardStep(step);
-            // Sync mobile tabs if mobile is active
-            var tabName = STEP_TO_TAB[step];
-            if (tabName && typeof window.switchTab === 'function' && document.getElementById('mobile-tab-content')) {
-                window.switchTab(tabName);
+            var sectionId = 'wiz-step-' + step;
+            var section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         };
 
-        // Hook into mobile switchTab to sync wizard progress bar
-        var _origSwitchTab = null;
-        function hookMobileTabs() {
-            if (window.switchTab && !_origSwitchTab) {
-                _origSwitchTab = window.switchTab;
-                window.switchTab = function(tabName) {
-                    _origSwitchTab(tabName);
-                    // Sync wizard progress bar (without recursion)
-                    var step = TAB_TO_STEP[tabName];
-                    if (step && step !== currentWizStep) {
-                        currentWizStep = step;
-                        updateProgressBar(step);
-                        // Show correct wizard section
-                        for (var i = 1; i <= WIZARD_STEPS; i++) {
-                            var sec = document.getElementById('wiz-step-' + i);
-                            if (!sec) continue;
-                            if (i === step) sec.classList.add('active');
-                            else sec.classList.remove('active');
-                        }
-                    }
-                };
-            }
-        }
-
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            showWizardStep(1);
-            // Delay hook to let mobile controller initialize first
-            setTimeout(hookMobileTabs, 100);
+            if (typeof calculate === 'function') {
+                calculate();
+            }
+
+            var resultsPanel = document.getElementById('results-panel');
+            if (resultsPanel) {
+                var headers = resultsPanel.querySelectorAll('.section-header.collapsed, .section-header-sm.collapsed');
+                for (var h = 0; h < headers.length; h++) {
+                    headers[h].classList.remove('collapsed');
+                }
+
+                var bodies = resultsPanel.querySelectorAll('.section-body.collapsed');
+                for (var b = 0; b < bodies.length; b++) {
+                    bodies[b].classList.remove('collapsed');
+                }
+            }
         });
     })();
     </script>
@@ -1458,13 +1383,11 @@
         var TAB_ORDER = ['profile', 'salary', 'invest', 'results', 'reference'];
 
         // Next button navigation config (IIFE-scoped so both addCalcButtons & switchTab can use them)
-        var NEXT_TAB_MAP = { profile: 'salary', salary: 'invest', invest: 'results', results: 'reference' };
-        var PREV_TAB_MAP = { salary: 'profile', invest: 'salary', results: 'invest', reference: 'results' };
+        var NEXT_TAB_MAP = { profile: 'salary', salary: 'invest', invest: 'results' };
         var NEXT_LABEL = {
             profile: { label: 'Next: Salary →', svg: '<polyline points="9 18 15 12 9 6"/>' },
             salary:  { label: 'Next: Investments →', svg: '<polyline points="9 18 15 12 9 6"/>' },
-            invest:  { label: 'See Results →', svg: '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/>' },
-            results: { label: 'Reference →', svg: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>' }
+            invest:  { label: 'See Results →', svg: '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/>' }
         };
 
         function initMobile() {
@@ -1530,6 +1453,7 @@
 
         function organizeIntoTabs() {
             // Only move TOP-LEVEL tagged elements (not children of already-tagged parents)
+            var tabContent = document.getElementById('mobile-tab-content');
             var taggedElements = document.querySelectorAll('[data-mobile-tab]');
             var movedElements = [];
 
@@ -1584,7 +1508,7 @@
                 hintEl.appendChild(dot);
             }
             // Insert after the tab content div
-            if (tabContent.parentNode) {
+            if (tabContent && tabContent.parentNode) {
                 tabContent.parentNode.insertBefore(hintEl, tabContent.nextSibling);
             }
         }
@@ -1628,25 +1552,13 @@
         }
 
         function addCalcButtons() {
-            // Append a fixed nav bar with Back + Next directly to <body> so it is NOT inside the
+            // Append a fixed next button directly to <body> so it is NOT inside the
             // animated .mob-tab-panel container.
             if (document.getElementById('mob-fixed-next-btn')) return;
 
             var wrap = document.createElement('div');
             wrap.className = 'mob-calc-btn-wrap';
             wrap.id = 'mob-fixed-next-btn';
-
-            // Back button
-            var backBtn = document.createElement('button');
-            backBtn.className = 'wizard-nav-btn btn-back';
-            backBtn.type = 'button';
-            backBtn.id = 'mob-back-action-btn';
-            backBtn.innerHTML = '← Back';
-            backBtn.style.display = 'none';
-            backBtn.addEventListener('click', function() {
-                var prev = PREV_TAB_MAP[currentTab];
-                if (prev) switchTab(prev);
-            });
 
             // Next button
             var btn = document.createElement('button');
@@ -1661,7 +1573,6 @@
                 if (next) switchTab(next);
             });
 
-            wrap.appendChild(backBtn);
             wrap.appendChild(btn);
             document.body.appendChild(wrap);
         }
@@ -1718,29 +1629,23 @@
                 else dots[d].classList.remove('active');
             }
 
-            // Update the fixed nav buttons (Back + Next)
+            // Update the fixed next button
             var fixedWrap = document.getElementById('mob-fixed-next-btn');
             var nextBtn   = document.getElementById('mob-next-action-btn');
-            var backBtn   = document.getElementById('mob-back-action-btn');
 
             if (fixedWrap) {
-                // Next button
                 var info = NEXT_LABEL[tabName];
                 if (info && nextBtn) {
+                    fixedWrap.style.display = '';
                     nextBtn.style.display = '';
                     nextBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' + info.svg + '</svg> ' + info.label;
                 } else if (nextBtn) {
-                    nextBtn.style.display = 'none';
-                }
-
-                // Back button - show for all tabs except first
-                if (backBtn) {
-                    backBtn.style.display = PREV_TAB_MAP[tabName] ? '' : 'none';
+                    fixedWrap.style.display = 'none';
                 }
             }
 
             // Scroll to top
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         // Update mobile summary card (called from calculator.js)

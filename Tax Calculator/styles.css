@@ -2,16 +2,16 @@
    CSS Custom Properties & Reset
    =========================== */
 :root {
-    --bg-primary: #050c14;
-    --bg-secondary: #0a1628;
-    --bg-card: #0f1f35;
-    --bg-card-hover: #152540;
-    --bg-input: #0c1a2e;
-    --border: #1a3050;
-    --border-light: #1e3a5f;
-    --text-primary: #e8f4fd;
-    --text-secondary: #7fa8c9;
-    --text-muted: #4a7090;
+    --bg-primary: #070d17;
+    --bg-secondary: #0c1829;
+    --bg-card: #101f38;
+    --bg-card-hover: #162844;
+    --bg-input: #0e1c32;
+    --border: #243b5c;
+    --border-light: #2e4a70;
+    --text-primary: #f0f6fc;
+    --text-secondary: #9ec5e0;
+    --text-muted: #6897b8;
     --accent-green: #10b981;
     --accent-green-light: #34d399;
     --accent-green-dim: rgba(16, 185, 129, 0.15);
@@ -21,7 +21,7 @@
     --accent-purple-dim: rgba(139, 92, 246, 0.15);
     --accent-amber: #f59e0b;
     --accent-red: #ef4444;
-    --gradient-hero: linear-gradient(135deg, #050c14 0%, #0a1628 50%, #0d1f38 100%);
+    --gradient-hero: linear-gradient(135deg, #070d17 0%, #0c1829 50%, #0f2240 100%);
     --gradient-green: linear-gradient(135deg, #10b981, #059669);
     --gradient-blue: linear-gradient(135deg, #3b82f6, #1d4ed8);
     --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
@@ -43,11 +43,25 @@ html {
 }
 
 body {
-    background: var(--bg-primary);
+    background: linear-gradient(180deg, #070d17 0%, #0b1526 30%, #0e1a30 60%, #0a1420 100%);
+    background-attachment: fixed;
     color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
     line-height: 1.6;
+}
+
+/* Subtle mesh overlay for cohesion */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 50% at 80% 30%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 70% 60% at 50% 90%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* ===========================
@@ -64,8 +78,8 @@ body {
 .bg-blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.08;
+    filter: blur(100px);
+    opacity: 0.12;
     animation: blobFloat 20s infinite ease-in-out;
 }
 
@@ -109,10 +123,10 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(5, 12, 20, 0.85);
+    background: rgba(10, 18, 30, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(50, 85, 130, 0.4);
     /* Push content below iOS notch / Dynamic Island */
     padding-top: constant(safe-area-inset-top);
     padding-top: env(safe-area-inset-top, 0px);
@@ -294,10 +308,232 @@ body {
 }
 
 .calculator-grid {
-    display: none; /* Replaced by wizard-section flow */
+    display: grid;
     grid-template-columns: minmax(0, 1.06fr) minmax(340px, 0.94fr);
     gap: 24px;
     align-items: start;
+}
+
+/* Desktop two-column layout for wizard sections */
+@media (min-width: 769px) {
+    .wizard-container {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(420px, 0.85fr);
+        gap: 36px;
+        align-items: start;
+        padding: 0 72px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .ref-container {
+        padding: 0 72px;
+        max-width: 1400px;
+        margin: 56px auto 48px;
+    }
+
+    .wizard-step-intro { display: none; }
+
+    /* ══════════════════════════════════════════════════════
+       UNIFIED CARD STYLE for both columns
+       ══════════════════════════════════════════════════════ */
+    .unified-card {
+        background: linear-gradient(180deg, rgba(15, 31, 53, 0.96), rgba(10, 22, 40, 0.96));
+        border: 1px solid rgba(36, 65, 100, 0.95);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .unified-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(52, 211, 153, 0.28), rgba(59, 130, 246, 0.14), transparent 75%);
+        pointer-events: none;
+    }
+    .unified-card:hover {
+        border-color: rgba(59, 130, 246, 0.35);
+        box-shadow: 0 20px 56px rgba(0, 0, 0, 0.40);
+    }
+
+    /* Left column: wizard-section IS the card */
+    .wizard-inputs-column .wizard-section {
+        background: linear-gradient(180deg, rgba(18, 36, 60, 0.95), rgba(12, 26, 46, 0.98));
+        border: 1px solid rgba(50, 85, 130, 0.6);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.35),
+            0 0 0 1px rgba(255, 255, 255, 0.03),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .wizard-inputs-column .wizard-section::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(52, 211, 153, 0.35), rgba(59, 130, 246, 0.2), transparent 70%);
+        pointer-events: none;
+    }
+    .wizard-inputs-column .wizard-section:hover {
+        border-color: rgba(70, 120, 180, 0.7);
+        box-shadow: 
+            0 20px 56px rgba(0, 0, 0, 0.42),
+            0 0 0 1px rgba(255, 255, 255, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    /* Flatten section-card inside left column (no double card) */
+    .wizard-inputs-column .section-card {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        overflow: visible;
+        margin-bottom: 0;
+    }
+    .wizard-inputs-column .section-card::before { display: none !important; }
+    .wizard-inputs-column .section-card:hover { transform: none; box-shadow: none; border-color: transparent; }
+
+    /* Right column: wizard-section is transparent container */
+    .wizard-results-column .wizard-section {
+        background: transparent;
+        border: none;
+        padding: 0;
+        box-shadow: none;
+        overflow: visible;
+    }
+    .wizard-results-column .wizard-section::before { display: none; }
+
+    /* Right column: .panel is transparent (content flows freely) */
+    .wizard-results-column .panel {
+        background: transparent;
+        border: none;
+        padding: 0;
+        box-shadow: none;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .wizard-results-column .panel::before { display: none; }
+
+    /* Right column: each section-card is styled as a full card */
+    .wizard-results-column .section-card {
+        background: linear-gradient(180deg, rgba(18, 36, 60, 0.95), rgba(12, 26, 46, 0.98));
+        border: 1px solid rgba(50, 85, 130, 0.6);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.35),
+            0 0 0 1px rgba(255, 255, 255, 0.03),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .wizard-results-column .section-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(52, 211, 153, 0.35), rgba(59, 130, 246, 0.2), transparent 70%);
+        pointer-events: none;
+    }
+    .wizard-results-column .section-card:hover {
+        border-color: rgba(70, 120, 180, 0.7);
+        box-shadow: 
+            0 20px 56px rgba(0, 0, 0, 0.42),
+            0 0 0 1px rgba(255, 255, 255, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        transform: none;
+    }
+
+    /* Result hero card matches the unified style */
+    .wizard-results-column .result-hero-card {
+        background: linear-gradient(180deg, rgba(18, 36, 60, 0.95), rgba(12, 26, 46, 0.98));
+        border: 1px solid rgba(50, 85, 130, 0.6);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.35),
+            0 0 0 1px rgba(255, 255, 255, 0.03),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        position: relative;
+        overflow: hidden;
+    }
+    .wizard-results-column .result-hero-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(52, 211, 153, 0.4), rgba(59, 130, 246, 0.25), transparent 65%);
+        pointer-events: none;
+    }
+
+    /* Tips card matches unified style */
+    .wizard-results-column .tips-card {
+        background: linear-gradient(180deg, rgba(18, 36, 60, 0.95), rgba(12, 26, 46, 0.98));
+        border: 1px solid rgba(50, 85, 130, 0.6);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.35),
+            0 0 0 1px rgba(255, 255, 255, 0.03),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        position: relative;
+        overflow: hidden;
+    }
+    .wizard-results-column .tips-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(52, 211, 153, 0.35), rgba(59, 130, 246, 0.2), transparent 70%);
+        pointer-events: none;
+    }
+
+    /* Min-tax card matches unified style */
+    .wizard-results-column .min-tax-card {
+        background: linear-gradient(180deg, rgba(18, 36, 60, 0.95), rgba(12, 26, 46, 0.98));
+        border: 1px solid rgba(245, 158, 11, 0.45);
+        border-radius: 20px;
+        padding: 20px 24px;
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.35),
+            0 0 0 1px rgba(245, 158, 11, 0.08);
+    }
+
+    /* Topic dividers inside right column */
+    .wizard-results-column .topic-divider {
+        margin: 8px 0;
+    }
+
+    .wizard-section { margin-bottom: 0; }
+
+    .wizard-inputs-column {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        grid-column: 1;
+    }
+
+    .wizard-results-column {
+        display: flex;
+        flex-direction: column;
+        gap: 0; /* Panel handles internal gaps */
+        grid-column: 2;
+        position: sticky;
+        top: 28px;
+    }
 }
 
 /* ===========================
@@ -307,11 +543,14 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0;
-    background: linear-gradient(180deg, rgba(15, 31, 53, 0.96), rgba(10, 22, 40, 0.96));
-    border: 1px solid rgba(36, 65, 100, 0.95);
+    background: linear-gradient(180deg, rgba(18, 36, 60, 0.95), rgba(12, 26, 46, 0.98));
+    border: 1px solid rgba(50, 85, 130, 0.6);
     border-radius: 24px;
     padding: 22px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+    box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
     position: relative;
     overflow: hidden;
 }
@@ -321,7 +560,7 @@ body {
     position: absolute;
     inset: 0 0 auto 0;
     height: 1px;
-    background: linear-gradient(90deg, rgba(52, 211, 153, 0.28), rgba(59, 130, 246, 0.14), transparent 75%);
+    background: linear-gradient(90deg, rgba(52, 211, 153, 0.35), rgba(59, 130, 246, 0.2), transparent 70%);
     pointer-events: none;
 }
 
@@ -389,17 +628,36 @@ body {
 }
 
 .section-card {
-    background: linear-gradient(180deg, rgba(8, 21, 38, 0.74), rgba(10, 24, 42, 0.92));
-    border: 1px solid rgba(255, 255, 255, 0.055);
-    border-radius: 18px;
-    padding: 22px;
-    margin-bottom: 14px;
-    transition: border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
+    background: linear-gradient(180deg, rgba(18, 36, 60, 0.95), rgba(12, 26, 46, 0.98));
+    border: 1px solid rgba(50, 85, 130, 0.6);
+    border-radius: 24px;
+    padding: 28px;
+    margin-bottom: 0;
+    box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.section-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(52, 211, 153, 0.35), rgba(59, 130, 246, 0.2), transparent 70%);
+    pointer-events: none;
 }
 
 .section-card:hover {
-    border-color: rgba(59, 130, 246, 0.2);
-    background: linear-gradient(180deg, rgba(10, 24, 42, 0.82), rgba(13, 29, 50, 0.96));
+    border-color: rgba(70, 120, 180, 0.7);
+    box-shadow: 
+        0 28px 70px rgba(0, 0, 0, 0.48),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
 }
 
 .section-header {
@@ -442,13 +700,24 @@ body {
 .section-header-sm {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    gap: 12px;
+    font-size: 15px;
     font-weight: 700;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
-    padding-bottom: 12px;
+    color: var(--text-primary);
+    margin-bottom: 18px;
+    padding-bottom: 14px;
     border-bottom: 1px solid var(--border);
+}
+
+.section-header-sm svg {
+    width: 32px;
+    height: 32px;
+    padding: 7px;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 8px;
+    color: var(--accent-purple);
+    flex-shrink: 0;
 }
 
 /* ===========================
@@ -544,14 +813,14 @@ body {
 .form-input {
     width: 100%;
     padding: 11px 12px 11px 28px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
+    background: rgba(10, 22, 40, 0.8);
+    border: 1px solid rgba(55, 90, 135, 0.5);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
     font-size: 14px;
     font-family: inherit;
     font-weight: 500;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     -moz-appearance: textfield;
 }
 
@@ -561,7 +830,8 @@ body {
 .form-input:focus {
     outline: none;
     border-color: var(--accent-green);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    background: rgba(10, 25, 45, 0.9);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
 .form-input::placeholder { color: var(--text-muted); }
@@ -575,8 +845,8 @@ body {
 .form-select {
     width: 100%;
     padding: 11px 36px 11px 14px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
+    background: rgba(10, 22, 40, 0.8);
+    border: 1px solid rgba(55, 90, 135, 0.5);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
     font-size: 13px;
@@ -584,13 +854,14 @@ body {
     font-weight: 500;
     appearance: none;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background 0.2s;
 }
 
 .form-select:focus {
     outline: none;
     border-color: var(--accent-green);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    background: rgba(10, 25, 45, 0.9);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
 .select-arrow {
@@ -1703,6 +1974,12 @@ body {
     /* ── Tab Content Panels ── */
     .mob-tab-panel {
         display: none;
+        position: relative;
+        will-change: transform, opacity;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
     }
 
     .mob-tab-panel.active {
@@ -1711,28 +1988,28 @@ body {
 
     /* Directional slide animations — class added by switchTab() based on navigation direction */
     @-webkit-keyframes mobSlideFromRight {
-        from { opacity: 0; -webkit-transform: translateX(28px); transform: translateX(28px); }
+        from { opacity: 0; -webkit-transform: translateX(16px); transform: translateX(16px); }
         to   { opacity: 1; -webkit-transform: translateX(0);   transform: translateX(0); }
     }
     @keyframes mobSlideFromRight {
-        from { opacity: 0; transform: translateX(28px); }
+        from { opacity: 0; transform: translateX(16px); }
         to   { opacity: 1; transform: translateX(0); }
     }
     @-webkit-keyframes mobSlideFromLeft {
-        from { opacity: 0; -webkit-transform: translateX(-28px); transform: translateX(-28px); }
+        from { opacity: 0; -webkit-transform: translateX(-16px); transform: translateX(-16px); }
         to   { opacity: 1; -webkit-transform: translateX(0);    transform: translateX(0); }
     }
     @keyframes mobSlideFromLeft {
-        from { opacity: 0; transform: translateX(-28px); }
+        from { opacity: 0; transform: translateX(-16px); }
         to   { opacity: 1; transform: translateX(0); }
     }
     .mob-tab-panel.slide-from-right {
-        -webkit-animation: mobSlideFromRight 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        animation: mobSlideFromRight 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        -webkit-animation: mobSlideFromRight 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        animation: mobSlideFromRight 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
     .mob-tab-panel.slide-from-left {
-        -webkit-animation: mobSlideFromLeft 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        animation: mobSlideFromLeft 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        -webkit-animation: mobSlideFromLeft 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        animation: mobSlideFromLeft 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     /* ── Tab content wrapper ── */
@@ -1740,6 +2017,7 @@ body {
         padding: 12px 16px;
         min-height: calc(100vh - 200px);
         min-height: calc(100dvh - 200px);
+        overflow: hidden;
         -webkit-overflow-scrolling: touch;
     }
 
@@ -1833,20 +2111,14 @@ body {
         font-size: 13px;
     }
 
-    /* ── Mobile nav buttons: Back + Next side by side with gradient fill ── */
+    /* ── Mobile next button area ── */
     .mob-calc-btn-wrap {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         z-index: 180;
-        display: -webkit-flex;
-        display: flex;
-        -webkit-align-items: center;
-        align-items: center;
-        -webkit-justify-content: space-between;
-        justify-content: space-between;
-        gap: 10px;
+        display: block;
         padding: 10px 12px;
         /* Space for tab bar + safe area, with old-Safari constant() fallback */
         padding-bottom: calc(62px + constant(safe-area-inset-bottom));
@@ -1865,20 +2137,11 @@ body {
     }
 
     .mob-calc-btn-wrap .calc-btn {
-        -webkit-flex: 1;
-        flex: 1;
+        width: 100%;
         box-shadow: 0 4px 24px rgba(16, 185, 129, 0.45);
         border-radius: 14px;
         padding: 14px;
         font-size: 15px;
-    }
-
-    .mob-calc-btn-wrap .wizard-nav-btn.btn-back {
-        -webkit-flex: 0 0 auto;
-        flex: 0 0 auto;
-        border-radius: 14px;
-        padding: 14px 16px;
-        font-size: 14px;
     }
 
     /* Add bottom padding to panels so content isn't hidden behind fixed button */
@@ -2092,7 +2355,7 @@ body {
    — Unified step-by-step flow for both mobile and desktop
    =========================== */
 .wizard-progress {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     gap: 0;
@@ -2160,7 +2423,7 @@ body {
 
 /* ── Wizard Navigation Bar ── */
 .wizard-nav {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
@@ -2199,9 +2462,17 @@ body {
 .wizard-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
 /* ── Desktop Wizard Step Sections ── */
-.wizard-section { display: none; }
+.wizard-section { display: block; margin-bottom: 24px; }
 .wizard-section.active { display: block; }
 .wizard-section .panel { overflow: visible; }
+
+/* Mobile stays single-column */
+@media (max-width: 768px) {
+    .wizard-container, .wizard-inputs-column, .wizard-results-column, .ref-container { 
+        display: block !important; 
+    }
+    .wizard-section { display: block !important; grid-column: auto !important; grid-row: auto !important; margin-bottom: 0; }
+}
 
 /* ── Wizard Step Intro Text ── */
 .wizard-step-intro {
@@ -2385,13 +2656,90 @@ body.light-mode .panel::before {
 }
 
 body.light-mode .section-card {
-    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,250,252,0.98));
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.99));
     border-color: rgba(203,213,225,0.8);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.07);
+}
+
+body.light-mode .section-card::before {
+    background: linear-gradient(90deg, rgba(5,150,105,0.18), rgba(37,99,235,0.09), transparent 75%);
 }
 
 body.light-mode .section-card:hover {
-    border-color: rgba(37,99,235,0.2);
-    background: rgba(255,255,255,0.99);
+    border-color: rgba(37,99,235,0.25);
+    background: rgba(255,255,255,1);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.10);
+}
+
+/* Left-column wizard-section in light mode */
+@media (min-width: 769px) {
+    body.light-mode .wizard-inputs-column .wizard-section {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.99));
+        border-color: rgba(203,213,225,0.8);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.06);
+    }
+    body.light-mode .wizard-inputs-column .wizard-section::before {
+        background: linear-gradient(90deg, rgba(5,150,105,0.18), rgba(37,99,235,0.09), transparent 75%);
+    }
+    body.light-mode .wizard-inputs-column .wizard-section:hover {
+        border-color: rgba(37,99,235,0.25);
+        box-shadow: 0 20px 56px rgba(0, 0, 0, 0.09);
+    }
+    /* Flat section-card inside left panels stays transparent */
+    body.light-mode .wizard-inputs-column .section-card {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+    /* Right column wizard-section is transparent */
+    body.light-mode .wizard-results-column .wizard-section {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+    body.light-mode .wizard-results-column .panel {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+    /* Right column section-cards are full cards in light mode */
+    body.light-mode .wizard-results-column .section-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.99));
+        border-color: rgba(203,213,225,0.8);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.06);
+    }
+    body.light-mode .wizard-results-column .section-card::before {
+        background: linear-gradient(90deg, rgba(5,150,105,0.18), rgba(37,99,235,0.09), transparent 75%);
+    }
+    body.light-mode .wizard-results-column .section-card:hover {
+        border-color: rgba(37,99,235,0.25);
+        box-shadow: 0 20px 56px rgba(0, 0, 0, 0.09);
+    }
+    /* Right column result-hero in light mode */
+    body.light-mode .wizard-results-column .result-hero-card {
+        background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+        border-color: rgba(5,150,105,0.25);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.06);
+    }
+    body.light-mode .wizard-results-column .result-hero-card::before {
+        background: linear-gradient(90deg, rgba(5,150,105,0.22), rgba(37,99,235,0.12), transparent 75%);
+    }
+    /* Right column tips-card in light mode */
+    body.light-mode .wizard-results-column .tips-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.99));
+        border-color: rgba(203,213,225,0.8);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.06);
+    }
+    body.light-mode .wizard-results-column .tips-card::before {
+        background: linear-gradient(90deg, rgba(5,150,105,0.18), rgba(37,99,235,0.09), transparent 75%);
+    }
+}
+
+/* Light mode section-header-sm icon */
+body.light-mode .section-header-sm svg {
+    background: rgba(124, 58, 237, 0.08);
+    border-color: rgba(124, 58, 237, 0.15);
+    color: var(--accent-purple);
 }
 
 body.light-mode .result-hero-card {

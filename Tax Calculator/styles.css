@@ -2742,6 +2742,33 @@ body.light-mode .section-header-sm svg {
     color: var(--accent-purple);
 }
 
+/* Light mode form inputs */
+body.light-mode .form-input,
+body.light-mode .form-select {
+    background: #ffffff;
+    border-color: rgba(203, 213, 225, 0.9);
+    color: #0f172a;
+}
+
+body.light-mode .form-input:focus,
+body.light-mode .form-select:focus {
+    background: #ffffff;
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+}
+
+body.light-mode .form-input::placeholder {
+    color: #94a3b8;
+}
+
+body.light-mode .input-prefix {
+    color: #64748b;
+}
+
+body.light-mode .select-arrow {
+    color: #64748b;
+}
+
 body.light-mode .result-hero-card {
     background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
     border-color: rgba(5,150,105,0.25);

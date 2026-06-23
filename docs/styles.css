@@ -113,6 +113,12 @@ body {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
+    /* Push content below iOS notch / Dynamic Island */
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top, 0px);
+    /* GPU layer so child touch targets work through backdrop-filter in Safari */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .header-inner {
@@ -1507,7 +1513,9 @@ body {
         display: block;
         position: -webkit-sticky;
         position: sticky;
-        top: 49px; /* below compact header */
+        /* Header height on mobile = 8px pad + 30px icon + 8px pad + 1px border + safe-area-inset-top */
+        top: calc(47px + constant(safe-area-inset-top));
+        top: calc(47px + env(safe-area-inset-top, 0px));
         z-index: 90;
         margin: 0;
         padding: 12px 16px;
@@ -1516,6 +1524,9 @@ body {
         backdrop-filter: blur(24px);
         border-bottom: 1px solid rgba(16, 185, 129, 0.2);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        /* GPU layer for reliable sticky in Safari */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
 
     .mob-summary-main {
@@ -1600,7 +1611,7 @@ body {
         left: 0;
         right: 0;
         z-index: 200;
-        background: rgba(5, 12, 20, 0.92);
+        background: rgba(5, 12, 20, 0.95);
         -webkit-backdrop-filter: blur(24px);
         backdrop-filter: blur(24px);
         border-top: 1px solid rgba(26, 48, 80, 0.6);
@@ -1612,6 +1623,9 @@ body {
         -webkit-align-items: center;
         align-items: center;
         box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+        /* GPU layer: ensures position:fixed is always accurate in Safari */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
 
     .mob-tab-btn {
@@ -1788,19 +1802,28 @@ body {
         font-size: 13px;
     }
 
-    /* ── Mobile calculate button (fixed above tab bar) ── */
+    /* ── Mobile Next button: fills from bottom with gradient so no gap above tab bar ── */
     .mob-calc-btn-wrap {
         position: fixed;
-        bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-        left: 12px;
-        right: 12px;
+        bottom: 0;
+        left: 0;
+        right: 0;
         z-index: 180;
-        pointer-events: none; /* let touches pass through when button not active */
+        padding: 10px 12px;
+        /* Space for tab bar + safe area, with old-Safari constant() fallback */
+        padding-bottom: calc(62px + constant(safe-area-inset-bottom));
+        padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+        /* Gradient fills gap between button and tab bar — no floating island look */
+        background: linear-gradient(to top, var(--bg-primary) 55%, transparent 100%);
+        pointer-events: none;
+        /* GPU compositing keeps position:fixed pixel-perfect in Safari */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
 
     .mob-calc-btn-wrap .calc-btn {
         pointer-events: all;
-        box-shadow: 0 -2px 24px rgba(0,0,0,0.55), 0 8px 32px rgba(16, 185, 129, 0.45);
+        box-shadow: 0 4px 24px rgba(16, 185, 129, 0.45);
         border-radius: 14px;
         padding: 14px;
         font-size: 15px;
@@ -1981,11 +2004,14 @@ body {
    Theme Toggle Button
    =========================== */
 .theme-toggle-btn {
+    display: -webkit-flex;
     display: flex;
+    -webkit-align-items: center;
     align-items: center;
+    -webkit-justify-content: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 1px solid var(--border);
     background: var(--bg-card);
@@ -1993,6 +2019,12 @@ body {
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
     flex-shrink: 0;
+    /* Safari: ensure button is always interactive */
+    position: relative;
+    z-index: 10;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .theme-toggle-btn:hover {

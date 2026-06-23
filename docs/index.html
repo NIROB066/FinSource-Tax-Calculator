@@ -408,21 +408,39 @@
             #print-overlay h3 { color:#333 !important; }
             #print-overlay p { color:#333 !important; }
             #print-overlay div { color:#111 !important; }
-            #print-overlay strong { color:inherit !important; }
-            #print-overlay .comp-row { display:flex; justify-content:space-between; padding:6px 10px; font-size:12px; border-bottom:1px solid #f1f5f9; color:#0f172a !important; }
-            #print-overlay .comp-row * { color:inherit !important; }
-            #print-overlay .comp-row.header { background:#f1f5f9; font-weight:800; font-size:10px; text-transform:uppercase; color:#334155 !important; }
-            #print-overlay .comp-row.total { background:#f0fdf4; border:1px solid #86efac; border-radius:5px; font-weight:800; color:#065f46 !important; margin-top:5px; }
+            #print-overlay span { color:#111 !important; }
+            #print-overlay strong { color:#111 !important; }
+            
+            /* Force ALL table content to be dark - override dark mode CSS variables */
+            #print-overlay .comp-row,
+            #print-overlay .comp-row *,
+            #print-overlay .slab-row,
+            #print-overlay .slab-row *,
+            #print-overlay .computation-table,
+            #print-overlay .computation-table *,
+            #print-overlay .slab-table,
+            #print-overlay .slab-table * {
+                color: #111 !important;
+                background: transparent !important;
+            }
+            
+            #print-overlay .comp-row { display:flex; justify-content:space-between; padding:6px 10px; font-size:12px; border-bottom:1px solid #ddd; }
+            #print-overlay .comp-row.header { background:#f1f5f9 !important; font-weight:800; font-size:10px; text-transform:uppercase; color:#333 !important; }
+            #print-overlay .comp-row.total { background:#e6f7e9 !important; border:1px solid #86efac; border-radius:5px; font-weight:800; color:#065f46 !important; margin-top:5px; }
+            #print-overlay .comp-row.total * { color:#065f46 !important; }
             #print-overlay .comp-row.subtotal { font-weight:700; color:#92400e !important; }
+            #print-overlay .comp-row.subtotal * { color:#92400e !important; }
             #print-overlay .comp-row.deduction { color:#065f46 !important; }
+            #print-overlay .comp-row.deduction * { color:#065f46 !important; }
             #print-overlay .comp-row.indent { padding-left:20px; }
-            #print-overlay .comp-row.surcharge { color:#991b1b !important; font-weight:600; }
-            #print-overlay .slab-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:6px 10px; font-size:11px; border-bottom:1px solid #f1f5f9; color:#0f172a !important; }
-            #print-overlay .slab-row * { color:inherit !important; }
-            #print-overlay .slab-row.active { background:#f0fdf4; }
-            #print-overlay .slab-row-header { font-size:10px; font-weight:700; color:#334155 !important; text-transform:uppercase; background:#f1f5f9; }
+            #print-overlay .comp-row.surcharge { color:#991b1b !important; font-weight:600; background:#fef2f2 !important; }
+            #print-overlay .comp-row.surcharge * { color:#991b1b !important; }
+            
+            #print-overlay .slab-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:6px 10px; font-size:11px; border-bottom:1px solid #ddd; }
+            #print-overlay .slab-row.active { background:#e6f7e9 !important; }
+            #print-overlay .slab-row-header { font-size:10px; font-weight:700; color:#333 !important; text-transform:uppercase; background:#f1f5f9 !important; }
             #print-overlay .slab-rate { text-align:right; font-weight:700; color:#92400e !important; }
-            #print-overlay .slab-tax-amount, #print-overlay .slab-applicable { text-align:right; color:#0f172a !important; }
+            #print-overlay .slab-tax-amount, #print-overlay .slab-applicable { text-align:right; color:#111 !important; }
             #print-overlay .pr-footer { margin-top:24px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:11px; color:#475569 !important; text-align:center; }
         }
     </style>

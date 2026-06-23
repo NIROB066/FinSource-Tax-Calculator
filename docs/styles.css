@@ -1616,8 +1616,8 @@ body {
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 200;
-        background: rgba(5, 12, 20, 0.95);
+        z-index: 9999;
+        background: rgba(5, 12, 20, 0.97);
         -webkit-backdrop-filter: blur(24px);
         backdrop-filter: blur(24px);
         border-top: 1px solid rgba(26, 48, 80, 0.6);
@@ -1629,9 +1629,10 @@ body {
         -webkit-align-items: center;
         align-items: center;
         box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
-        /* GPU layer: ensures position:fixed is always accurate in Safari */
+        /* GPU layer */
         -webkit-transform: translateZ(0);
         transform: translateZ(0);
+        pointer-events: auto !important;
     }
 
     .mob-tab-btn {
@@ -1658,6 +1659,7 @@ body {
         flex: 1;
         min-height: 48px;            /* Apple HIG minimum touch target */
         font-family: inherit;
+        pointer-events: auto !important;
     }
 
     .mob-tab-btn svg {

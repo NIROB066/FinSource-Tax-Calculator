@@ -1500,32 +1500,29 @@
             // Move sections into their tab panels
             organizeIntoTabs();
 
-            // Wire tab buttons via event delegation on the nav element.
-            // touchend fires immediately (no 300ms delay on iOS Safari); click as fallback.
+            // Wire tab buttons — add DIRECT listeners to each button for maximum reliability.
             var tabBar = document.getElementById('mobile-tab-bar');
             if (tabBar) {
-                var navTouchHandler = function(e) {
-                    var el = e.target;
-                    while (el && el !== tabBar) {
-                        if (el.classList && el.classList.contains('mob-tab-btn')) {
-                            var t = el.getAttribute('data-tab');
-                            if (t) { e.preventDefault(); switchTab(t); }
-                            break;
-                        }
-                        el = el.parentElement;
-                    }
-                };
-                tabBar.addEventListener('touchend', navTouchHandler, { passive: false });
-                tabBar.addEventListener('click', function(e) {
-                    var el = e.target;
-                    while (el && el !== tabBar) {
-                        if (el.classList && el.classList.contains('mob-tab-btn')) {
-                            switchTab(el.getAttribute('data-tab'));
-                            break;
-                        }
-                        el = el.parentElement;
-                    }
-                });
+                var btns = tabBar.querySelectorAll('.mob-tab-btn');
+                for (var b = 0; b < btns.length; b++) {
+                    (function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var t = btn.getAttribute('data-tab');
+                            if (t && typeof window.switchTab === 'function') {
+                                window.switchTab(t);
+                            }
+                        });
+                        btn.addEventListener('touchend', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var t = btn.getAttribute('data-tab');
+                            if (t && typeof window.switchTab === 'function') {
+                                window.switchTab(t);
+                            }
+                        }, { passive: false });
+                    })(btns[b]);
+                }
             }
 
             switchTab(currentTab);

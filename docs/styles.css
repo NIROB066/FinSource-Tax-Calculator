@@ -1788,12 +1788,27 @@ body {
         font-size: 13px;
     }
 
-    /* ── Mobile calculate button ── */
+    /* ── Mobile calculate button (fixed above tab bar) ── */
     .mob-calc-btn-wrap {
-        position: sticky;
-        bottom: 80px;
-        z-index: 50;
-        padding: 8px 0;
+        position: fixed;
+        bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+        left: 12px;
+        right: 12px;
+        z-index: 180;
+        pointer-events: none; /* let touches pass through when button not active */
+    }
+
+    .mob-calc-btn-wrap .calc-btn {
+        pointer-events: all;
+        box-shadow: 0 -2px 24px rgba(0,0,0,0.55), 0 8px 32px rgba(16, 185, 129, 0.45);
+        border-radius: 14px;
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    /* Add bottom padding to panels so content isn't hidden behind fixed button */
+    .mob-tab-panel.active {
+        padding-bottom: 140px;
     }
 
     #mobile-tab-content .calc-btn {
@@ -1801,6 +1816,27 @@ body {
         padding: 14px;
         font-size: 15px;
         box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Swipe hint indicator dots */
+    .mob-swipe-hint {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 0 4px;
+    }
+
+    .mob-swipe-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--border);
+        transition: background 0.25s, transform 0.25s;
+    }
+
+    .mob-swipe-dot.active {
+        background: var(--accent-green);
+        transform: scale(1.35);
     }
 
     /* ── Results tab: make result hero more compact ── */
@@ -1938,6 +1974,215 @@ body {
     #mobile-tab-content .slab-row {
         font-size: 11px;
         padding: 8px 10px;
+    }
+}
+
+/* ===========================
+   Theme Toggle Button
+   =========================== */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+    flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--accent-green-dim);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+    transform: rotate(20deg);
+}
+
+.theme-toggle-btn .icon-dark { display: block; }
+.theme-toggle-btn .icon-light { display: none; }
+
+body.light-mode .theme-toggle-btn .icon-dark { display: none; }
+body.light-mode .theme-toggle-btn .icon-light { display: block; }
+
+/* ===========================
+   Light Mode
+   =========================== */
+body.light-mode {
+    --bg-primary: #f1f5f9;
+    --bg-secondary: #e8edf3;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+    --bg-input: #ffffff;
+    --border: #cbd5e1;
+    --border-light: #94a3b8;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --accent-green: #059669;
+    --accent-green-light: #10b981;
+    --accent-green-dim: rgba(5, 150, 105, 0.1);
+    --accent-blue: #2563eb;
+    --accent-blue-dim: rgba(37, 99, 235, 0.1);
+    --accent-purple: #7c3aed;
+    --accent-purple-dim: rgba(124, 58, 237, 0.1);
+    --accent-amber: #b45309;
+    --accent-red: #dc2626;
+    --gradient-hero: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #eff6ff 100%);
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 8px 40px rgba(0, 0, 0, 0.14);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+body.light-mode .bg-blob { opacity: 0.04; }
+
+body.light-mode .header {
+    background: rgba(241, 245, 249, 0.92);
+    border-bottom-color: var(--border);
+}
+
+body.light-mode .panel {
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.98));
+    border-color: rgba(203, 213, 225, 0.9);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+}
+
+body.light-mode .panel::before {
+    background: linear-gradient(90deg, rgba(5,150,105,0.18), rgba(37,99,235,0.09), transparent 75%);
+}
+
+body.light-mode .section-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,250,252,0.98));
+    border-color: rgba(203,213,225,0.8);
+}
+
+body.light-mode .section-card:hover {
+    border-color: rgba(37,99,235,0.2);
+    background: rgba(255,255,255,0.99);
+}
+
+body.light-mode .result-hero-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+    border-color: rgba(5,150,105,0.25);
+}
+
+body.light-mode .opp-dashboard {
+    background: linear-gradient(145deg, rgba(241,245,249,0.9), rgba(255,255,255,0.95));
+    border-color: rgba(124,58,237,0.2);
+}
+
+body.light-mode .opp-card {
+    background: rgba(0,0,0,0.02);
+    border-color: rgba(0,0,0,0.07);
+}
+
+body.light-mode .opp-card:hover { background: rgba(0,0,0,0.04); }
+
+body.light-mode .opp-card.actionable {
+    background: linear-gradient(180deg, rgba(5,150,105,0.06), rgba(5,150,105,0.02));
+    border-color: rgba(5,150,105,0.3);
+}
+
+body.light-mode .hero-title {
+    background: linear-gradient(135deg, #0f172a 0%, #059669 50%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+body.light-mode .slab-row {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+body.light-mode .comp-row.header {
+    background: var(--bg-secondary);
+}
+
+body.light-mode .comp-row.total {
+    background: rgba(5,150,105,0.1);
+    border-color: rgba(5,150,105,0.2);
+}
+
+body.light-mode .ref-card {
+    background: #ffffff;
+    border-color: var(--border);
+}
+
+body.light-mode .tips-card {
+    background: rgba(37,99,235,0.06);
+    border-color: rgba(37,99,235,0.18);
+}
+
+body.light-mode .min-tax-card {
+    background: rgba(180, 83, 9, 0.08);
+    border-color: rgba(180, 83, 9, 0.25);
+}
+
+body.light-mode .invest-item,
+body.light-mode .investment-limit-bar {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+body.light-mode .month-card {
+    background: rgba(0,0,0,0.02);
+}
+
+body.light-mode .isb-item {
+    background: rgba(0,0,0,0.02);
+}
+
+body.light-mode .result-mini-card {
+    background: rgba(0,0,0,0.03);
+}
+
+body.light-mode .footer {
+    background: var(--bg-secondary);
+    border-top-color: var(--border);
+}
+
+body.light-mode .summary-strip {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+/* Light mode mobile */
+@media (max-width: 768px) {
+    body.light-mode #mobile-tab-summary,
+    body.light-mode #mobile-tax-summary {
+        background: rgba(241, 245, 249, 0.95);
+        border-bottom-color: rgba(5, 150, 105, 0.2);
+    }
+
+    body.light-mode #mobile-tab-bar {
+        background: rgba(241, 245, 249, 0.97);
+        border-top-color: var(--border);
+    }
+
+    body.light-mode .mob-tab-btn {
+        color: var(--text-muted);
+    }
+
+    body.light-mode .mob-tab-btn.active {
+        color: var(--accent-green);
+    }
+
+    body.light-mode .mob-step-indicator {
+        background: rgba(5, 150, 105, 0.07);
+        border-color: rgba(5, 150, 105, 0.15);
+    }
+
+    body.light-mode .mob-summary-item {
+        background: rgba(241, 245, 249, 0.8);
+    }
+
+    body.light-mode .mob-summary-grid {
+        background: rgba(0,0,0,0.06);
     }
 }
 

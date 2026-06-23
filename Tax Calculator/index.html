@@ -323,6 +323,27 @@
             .topic-divider { margin: 22px 0 10px; }
         }
 
+        /* ── Light Mode: fix hardcoded white/light colours ── */
+        body.light-mode .opp-title { color: #0f172a !important; }
+        body.light-mode .opp-subtitle { color: #475569 !important; }
+        body.light-mode .opp-card-label { color: #475569 !important; }
+        body.light-mode .opp-card-value { color: #0f172a !important; }
+        body.light-mode .opp-card-sub { color: #475569 !important; }
+        body.light-mode .opp-card.actionable .opp-card-value { color: #047857 !important; }
+        body.light-mode .opp-card.actionable .opp-card-label { color: #065f46 !important; }
+        body.light-mode .opp-card.actionable .opp-card-sub { color: #065f46 !important; }
+        body.light-mode .opp-banner { color: #92400e !important; background: rgba(180,83,9,0.07) !important; border-left-color: #b45309 !important; border-color: rgba(180,83,9,0.18) !important; }
+        body.light-mode .opp-banner.success { color: #065f46 !important; background: rgba(5,150,105,0.07) !important; border-left-color: #059669 !important; border-color: rgba(5,150,105,0.18) !important; }
+        body.light-mode .opp-header-icon { color: #6d28d9 !important; }
+        body.light-mode .breakdown-tbl tr.taxable-row td,
+        body.light-mode .breakdown-tbl tr.total-row td { color: #0f172a !important; background: rgba(5,150,105,0.06) !important; }
+        body.light-mode .pf-box-title { color: #4c1d95 !important; }
+        body.light-mode .tds-monthly-amount { color: #047857 !important; }
+        body.light-mode .tds-table tr.total-row td { color: #047857 !important; background: rgba(5,150,105,0.07) !important; }
+        body.light-mode .month-card-label { color: #0f172a !important; }
+        body.light-mode .isb-value { color: #0f172a !important; }
+        body.light-mode .result-main-sub { color: #047857 !important; }
+
         /* ── Print overlay ── */
         #print-overlay { display: none; }
         @media print {
@@ -350,24 +371,31 @@
             #print-overlay .pr-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:22px; }
             #print-overlay .pr-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; }
             #print-overlay .pr-box.hl { background:#f0fdf4; border-color:#86efac; }
-            #print-overlay .pr-lbl { font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; }
-            #print-overlay .pr-val { font-size:17px; font-weight:800; color:#111; }
-            #print-overlay .pr-val.g { color:#059669; }
-            #print-overlay .pr-val.a { color:#d97706; }
-            #print-overlay h2 { font-size:13px; font-weight:700; color:#334155; margin:18px 0 8px; padding-bottom:5px; border-bottom:1px solid #e2e8f0; }
-            #print-overlay .comp-row { display:flex; justify-content:space-between; padding:6px 10px; font-size:12px; border-bottom:1px solid #f1f5f9; }
-            #print-overlay .comp-row.header { background:#f1f5f9; font-weight:800; font-size:10px; text-transform:uppercase; color:#64748b; }
-            #print-overlay .comp-row.total { background:#f0fdf4; border:1px solid #86efac; border-radius:5px; font-weight:800; color:#065f46; margin-top:5px; }
-            #print-overlay .comp-row.subtotal { font-weight:700; color:#d97706; }
-            #print-overlay .comp-row.deduction { color:#059679; }
+            #print-overlay .pr-lbl { font-size:10px; font-weight:700; color:#334155 !important; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; }
+            #print-overlay .pr-val { font-size:17px; font-weight:800; color:#111 !important; }
+            #print-overlay .pr-val.g { color:#065f46 !important; }
+            #print-overlay .pr-val.a { color:#92400e !important; }
+            #print-overlay h2 { font-size:13px; font-weight:700; color:#0f172a !important; margin:18px 0 8px; padding-bottom:5px; border-bottom:1px solid #e2e8f0; }
+            #print-overlay .comp-row { display:flex; justify-content:space-between; padding:6px 10px; font-size:12px; border-bottom:1px solid #f1f5f9; color:#0f172a !important; }
+            #print-overlay .comp-row * { color:inherit !important; }
+            #print-overlay .comp-row.header { background:#f1f5f9; font-weight:800; font-size:10px; text-transform:uppercase; color:#334155 !important; }
+            #print-overlay .comp-row.total { background:#f0fdf4; border:1px solid #86efac; border-radius:5px; font-weight:800; color:#065f46 !important; margin-top:5px; }
+            #print-overlay .comp-row.subtotal { font-weight:700; color:#92400e !important; }
+            #print-overlay .comp-row.deduction { color:#065f46 !important; }
             #print-overlay .comp-row.indent { padding-left:20px; }
-            #print-overlay .comp-row.surcharge { color:#ef4444; font-weight:600; }
-            #print-overlay .slab-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:6px 10px; font-size:11px; border-bottom:1px solid #f1f5f9; }
+            #print-overlay .comp-row.surcharge { color:#991b1b !important; font-weight:600; }
+            #print-overlay .slab-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:6px 10px; font-size:11px; border-bottom:1px solid #f1f5f9; color:#0f172a !important; }
+            #print-overlay .slab-row * { color:inherit !important; }
             #print-overlay .slab-row.active { background:#f0fdf4; }
-            #print-overlay .slab-row-header { font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; background:#f1f5f9; }
-            #print-overlay .slab-rate { text-align:right; font-weight:700; color:#d97706; }
-            #print-overlay .slab-tax-amount, #print-overlay .slab-applicable { text-align:right; }
-            #print-overlay .pr-footer { margin-top:24px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:11px; color:#94a3b8; text-align:center; }
+            #print-overlay .slab-row-header { font-size:10px; font-weight:700; color:#334155 !important; text-transform:uppercase; background:#f1f5f9; }
+            #print-overlay .slab-rate { text-align:right; font-weight:700; color:#92400e !important; }
+            #print-overlay .slab-tax-amount, #print-overlay .slab-applicable { text-align:right; color:#0f172a !important; }
+            #print-overlay .pr-footer { margin-top:24px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:11px; color:#475569 !important; text-align:center; }
+            /* Force ALL text in print overlay to be dark and visible */
+            #print-overlay, #print-overlay * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </head>
@@ -398,6 +426,13 @@
             </div>
             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
                 <div style="font-size:10px; color:var(--text-muted); font-weight:500;">By: Rifat Anwar</div>
+                <!-- Dark / Light mode toggle -->
+                <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" title="Toggle dark/light mode" aria-label="Toggle dark/light mode">
+                    <!-- Moon icon (shown in dark mode) -->
+                    <svg class="icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <!-- Sun icon (shown in light mode) -->
+                    <svg class="icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                </button>
                 <button class="install-btn-header" id="install-app-btn" type="button">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
                     Install App
@@ -1271,6 +1306,14 @@
         // Tab definitions
         var TAB_ORDER = ['profile', 'salary', 'invest', 'results', 'reference'];
 
+        // Next button navigation config (IIFE-scoped so both addCalcButtons & switchTab can use them)
+        var NEXT_TAB_MAP = { profile: 'salary', salary: 'invest', invest: 'results' };
+        var NEXT_LABEL = {
+            profile: { label: 'Next: Salary \u2192', svg: '<polyline points="9 18 15 12 9 6"/>' },
+            salary:  { label: 'Next: Investments \u2192', svg: '<polyline points="9 18 15 12 9 6"/>' },
+            invest:  { label: 'Calculate & View Results \u2192', svg: '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/>' }
+        };
+
         function initMobile() {
             if (mobileInitialized) return;
             mobileInitialized = true;
@@ -1385,6 +1428,20 @@
             // Hide the old calculator grid
             var calcGrid = document.querySelector('.calculator-grid');
             if (calcGrid) calcGrid.style.display = 'none';
+
+            // Inject swipe hint dots below the mobile tab content
+            var hintEl = document.createElement('div');
+            hintEl.className = 'mob-swipe-hint';
+            hintEl.id = 'mob-swipe-hint';
+            for (var si = 0; si < TAB_ORDER.length; si++) {
+                var dot = document.createElement('span');
+                dot.className = 'mob-swipe-dot' + (si === 0 ? ' active' : '');
+                hintEl.appendChild(dot);
+            }
+            // Insert after the tab content div
+            if (tabContent.parentNode) {
+                tabContent.parentNode.insertBefore(hintEl, tabContent.nextSibling);
+            }
         }
 
         function addTabHeaders() {
@@ -1426,36 +1483,29 @@
         }
 
         function addCalcButtons() {
-            var tabs = ['profile', 'salary', 'invest'];
-            var nextTabMap = { profile: 'salary', salary: 'invest', invest: 'results' };
-            var nextLabel = { profile: 'Next: Salary \u2192', salary: 'Next: Investments \u2192', invest: 'Calculate & View Results \u2192' };
+            // Append ONE fixed button directly to <body> so it is NOT inside the
+            // animated .mob-tab-panel container. CSS animations that use transform
+            // create a new containing block, which breaks position:fixed for children.
+            if (document.getElementById('mob-fixed-next-btn')) return;
 
-            for (var i = 0; i < tabs.length; i++) {
-                var tabName = tabs[i];
-                var panel = document.getElementById('mob-panel-' + tabName);
-                if (!panel || panel.querySelector('.mob-calc-btn-wrap')) continue;
+            var wrap = document.createElement('div');
+            wrap.className = 'mob-calc-btn-wrap';
+            wrap.id = 'mob-fixed-next-btn';
 
-                var wrap = document.createElement('div');
-                wrap.className = 'mob-calc-btn-wrap';
+            var btn = document.createElement('button');
+            btn.className = 'calc-btn';
+            btn.type = 'button';
+            btn.id = 'mob-next-action-btn';
+            var initInfo = NEXT_LABEL[currentTab] || NEXT_LABEL['profile'];
+            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' + initInfo.svg + '</svg> ' + initInfo.label;
+            btn.addEventListener('click', function() {
+                calculate();
+                var next = NEXT_TAB_MAP[currentTab];
+                if (next) switchTab(next);
+            });
 
-                var svgContent = tabName === 'invest'
-                    ? '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/>'
-                    : '<polyline points="9 18 15 12 9 6"/>';
-
-                var btn = document.createElement('button');
-                btn.className = 'calc-btn';
-                btn.type = 'button';
-                btn.setAttribute('data-next-tab', nextTabMap[tabName]);
-                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' + svgContent + '</svg> ' + nextLabel[tabName];
-                btn.addEventListener('click', function() {
-                    calculate();
-                    var next = this.getAttribute('data-next-tab');
-                    if (next) switchTab(next);
-                });
-
-                wrap.appendChild(btn);
-                panel.appendChild(wrap);
-            }
+            wrap.appendChild(btn);
+            document.body.appendChild(wrap);
         }
 
         // Global function so it can be called from anywhere
@@ -1490,6 +1540,30 @@
                     panels[j].style.animation = '';
                 } else {
                     panels[j].className = 'mob-tab-panel';
+                }
+            }
+
+            // Update swipe hint dots
+            var dots = document.querySelectorAll('.mob-swipe-dot');
+            var idx = TAB_ORDER.indexOf(tabName);
+            for (var d = 0; d < dots.length; d++) {
+                if (d === idx) dots[d].classList.add('active');
+                else dots[d].classList.remove('active');
+            }
+
+            // Update the fixed Next button (label + visibility)
+            var fixedWrap = document.getElementById('mob-fixed-next-btn');
+            var nextBtn   = document.getElementById('mob-next-action-btn');
+            if (fixedWrap) {
+                var info = NEXT_LABEL[tabName];
+                if (info) {
+                    fixedWrap.style.display = '';
+                    if (nextBtn) {
+                        nextBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' + info.svg + '</svg> ' + info.label;
+                    }
+                } else {
+                    // On results / reference tab, hide the Next button
+                    fixedWrap.style.display = 'none';
                 }
             }
 
@@ -1553,5 +1627,92 @@
         });
     })();
     </script>
+    <!-- ═══ THEME TOGGLE ═══ -->
+    <script>
+    (function() {
+        'use strict';
+        var STORAGE_KEY = 'finsource-theme';
+        var btn = document.getElementById('theme-toggle-btn');
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-mode');
+            } else {
+                document.body.classList.remove('light-mode');
+            }
+            // Update meta theme-color
+            var metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', theme === 'light' ? '#e2f5ed' : '#10b981');
+            }
+        }
+
+        function toggleTheme() {
+            var isLight = document.body.classList.contains('light-mode');
+            var newTheme = isLight ? 'dark' : 'light';
+            try { localStorage.setItem(STORAGE_KEY, newTheme); } catch(e) {}
+            applyTheme(newTheme);
+        }
+
+        // Init from storage
+        var saved = 'dark';
+        try { saved = localStorage.getItem(STORAGE_KEY) || 'dark'; } catch(e) {}
+        applyTheme(saved);
+
+        if (btn) {
+            btn.addEventListener('click', toggleTheme);
+        }
+    })();
+    </script>
+
+    <!-- ═══ SWIPE GESTURE SUPPORT ═══ -->
+    <script>
+    (function() {
+        'use strict';
+        var TAB_ORDER = ['profile', 'salary', 'invest', 'results', 'reference'];
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var MIN_SWIPE_X = 50;   // px horizontal needed to count
+        var MAX_SWIPE_Y = 80;   // px vertical allowed before cancelling
+
+        function getTabIndex(name) { return TAB_ORDER.indexOf(name); }
+
+        function getCurrentTab() {
+            var active = document.querySelector('.mob-tab-btn.active');
+            return active ? active.getAttribute('data-tab') : 'profile';
+        }
+
+        document.addEventListener('touchstart', function(e) {
+            if (window.innerWidth > 768) return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            if (window.innerWidth > 768) return;
+            // Only handle swipes on the tab content area (not on inputs or selects)
+            var target = e.target;
+            var tag = target.tagName ? target.tagName.toUpperCase() : '';
+            if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+            var dx = e.changedTouches[0].clientX - touchStartX;
+            var dy = e.changedTouches[0].clientY - touchStartY;
+
+            if (Math.abs(dx) < MIN_SWIPE_X) return;
+            if (Math.abs(dy) > MAX_SWIPE_Y) return;
+
+            var cur = getCurrentTab();
+            var idx = getTabIndex(cur);
+            if (dx < 0 && idx < TAB_ORDER.length - 1) {
+                // Swipe left → next tab
+                if (typeof window.switchTab === 'function') window.switchTab(TAB_ORDER[idx + 1]);
+            } else if (dx > 0 && idx > 0) {
+                // Swipe right → previous tab
+                if (typeof window.switchTab === 'function') window.switchTab(TAB_ORDER[idx - 1]);
+            }
+        }, { passive: true });
+    })();
+    </script>
+
 </body>
 </html>

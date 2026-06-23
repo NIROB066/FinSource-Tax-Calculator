@@ -298,9 +298,9 @@ function calculate() {
     });
 
     updateSlabTable('slab-table', slabDetails, taxableIncome, 'Total Gross Tax');
-    updateSlabTable('office-slab-table', officeSlabDetails, annBasic, `Tax Computed on Basic Salary (৳${formatTaka(annBasic)})`);
+    updateSlabTable('office-slab-table', officeSlabDetails, annBasic, `Tax Computed on Basic Salary (${formatTaka(annBasic)})`);
     const officeHeader = document.getElementById('office-slab-title-header');
-    if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic Salary: ৳${formatTaka(annBasic)})`;
+    if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic Salary: ${formatTaka(annBasic)})`;
     document.getElementById('office-slab-container').style.display = 'block';
     updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS: Math.min(getVal('inv-dps'), C.DPS_ANNUAL_LIMIT), invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
     updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
@@ -363,7 +363,7 @@ function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, in
     document.getElementById('net-tax-display').textContent    = formatTaka(netTax);
     
     const reason = officePaidTax < taxOnBasic ? '(Capped by Assumed Net Tax)' : '(Tax on Basic)';
-    document.getElementById('net-tax-monthly').innerHTML      = `Office Pays: <span style="color:#fff">৳${formatTaka(officePaidTax)}</span> <span style="font-size:10px; opacity:0.8; font-weight:500;">${reason}</span>`;
+    document.getElementById('net-tax-monthly').innerHTML      = `Office Pays: <span style="color:var(--text-primary);font-weight:800">${formatTaka(officePaidTax)}</span> <span style="font-size:10px; opacity:0.7; font-weight:500;">${reason}</span>`;
     
     document.getElementById('gross-tax-display').textContent  = formatTaka(grossTax);
     document.getElementById('rebate-display').textContent     = formatTaka(investRebate + earlyFilingRebate);
@@ -420,7 +420,7 @@ function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebat
             <div class="opp-banner">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 <div>
-                    <strong>Action Required:</strong> You are missing out on tax savings! Invest an additional <strong style="color:#fff">${formatTaka(remainingInvestment)}</strong> to claim your maximum rebate of <strong style="color:#fff">${formatTaka(maxRebatePossible)}</strong>.
+                    <strong>Action Required:</strong> You are missing out on tax savings! Invest an additional <strong style="color:var(--text-primary)">${formatTaka(remainingInvestment)}</strong> to claim your maximum rebate of <strong style="color:var(--text-primary)">${formatTaka(maxRebatePossible)}</strong>.
                 </div>
             </div>
         `;
@@ -447,13 +447,13 @@ function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebat
                 </div>
             </div>
             
-            <div style="background:rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 12px; color: #cbd5e1;">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Total Gross Income:</span><strong style="color:#f8fafc">${formatTaka(grossIncome)}</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Less: Exemption:</span><strong style="color:#10b981">-${formatTaka(allowanceExemption)}</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;"><span>Taxable Income:</span><strong style="color:#f8fafc">${formatTaka(taxableIncome)}</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom: 4px; margin-top: 4px;"><span>Max Rebate Cap (3% of Taxable Income):</span><strong style="color:#f59e0b">${formatTaka(threePctIncome)}</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Max Rebate Allowed (Capped at ৳7.5L):</span><strong style="color:#f59e0b">${formatTaka(maxRebatePossible)}</strong></div>
-                <div style="display:flex; justify-content:space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px; font-weight: 700; color: #10b981;"><span>Required Investment for Max Rebate (Rebate ÷ 10%):</span><span>${formatTaka(maxInvestmentAllowed)}</span></div>
+            <div style="background:var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 12px; color:var(--text-secondary);">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Total Gross Income:</span><strong style="color:var(--text-primary)">${formatTaka(grossIncome)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Less: Exemption:</span><strong style="color:var(--accent-green)">-${formatTaka(allowanceExemption)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px; border-bottom: 1px solid var(--border); padding-bottom: 4px;"><span>Taxable Income:</span><strong style="color:var(--text-primary)">${formatTaka(taxableIncome)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px; margin-top: 4px;"><span>Max Rebate Cap (3% of Taxable Income):</span><strong style="color:var(--accent-amber)">${formatTaka(threePctIncome)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;"><span>Max Rebate Allowed (Capped at ৳7.5L):</span><strong style="color:var(--accent-amber)">${formatTaka(maxRebatePossible)}</strong></div>
+                <div style="display:flex; justify-content:space-between; border-top: 1px solid var(--border); padding-top: 4px; font-weight: 700; color:var(--accent-green);"><span>Required Investment for Max Rebate (Rebate ÷ 10%):</span><span>${formatTaka(maxInvestmentAllowed)}</span></div>
             </div>
 
             <div class="opp-grid">
@@ -487,7 +487,7 @@ function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, tax
 
     const steps = [
         { n: 1, cls: 'step-c1', title: 'Annual Gross Income', detail: `Salary + Bonuses + Office PF + Other Income`, amount: grossIncome },
-        { n: 2, cls: 'step-c2', title: '(−) Allowance Exemption', detail: `min(৳5,00,000 , 1/3 of Total Income ৳${formatTaka(salaryThird)}) = ${formatTaka(allowanceExemption)}`, amount: -allowanceExemption, isDeduction: true },
+        { n: 2, cls: 'step-c2', title: '(−) Allowance Exemption', detail: `min(৳5,00,000 , 1/3 of Total Income ${formatTaka(salaryThird)}) = ${formatTaka(allowanceExemption)}`, amount: -allowanceExemption, isDeduction: true },
         { n: 3, cls: 'step-c3', title: '= Taxable Income', detail: 'Gross Income − Allowance Exemption', amount: taxableIncome, isResult: true },
         { n: 4, cls: 'step-c1', title: '(−) Tax-Free Threshold', detail: `Your category's tax-free limit`, amount: -taxFreeLimit, isDeduction: true },
         { n: 5, cls: 'step-c3', title: 'Gross Tax (from slabs)', detail: 'Progressive slab-wise calculation below', amount: grossTax },
@@ -498,7 +498,7 @@ function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, tax
     if (lateSurcharge > 0)     steps.push({ n: 7, cls: 'step-c4', title: '(+) Late Filing Surcharge', detail: qConfig.label, amount: lateSurcharge });
 
     steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Total Net Tax', detail: 'After all rebates & surcharges', amount: netTax, isResult: true });
-    steps.push({ n: steps.length + 1, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: `min(Tax on Basic ৳${formatTaka(taxOnBasic)}, Assumed Net Tax ৳${formatTaka(assumedNetTaxByOffice)})`, amount: -officePaidTax, isDeduction: true });
+    steps.push({ n: steps.length + 1, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: `min(Tax on Basic ${formatTaka(taxOnBasic)}, Assumed Net Tax ${formatTaka(assumedNetTaxByOffice)})`, amount: -officePaidTax, isDeduction: true });
     steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Final Payable By You', detail: 'Total Net Tax − Office Contribution', amount: finalPayable, isResult: true });
 
     container.innerHTML = steps.map((s, i) => `
@@ -643,7 +643,7 @@ function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt
         { label: 'Employer PF Contribution', value: Math.round(totalSalary * TAX_CONFIG.PF_OFFICE_PCT), indent: true },
         { label: 'Other Income', value: otherIncome },
         { label: 'TOTAL GROSS INCOME', value: grossIncome, isSubtotal: true },
-        { label: `Less: Allowance Exemption (min of ৳5,00,000 / 1/3 Total Income ৳${formatTaka(salaryThird)})`, value: -allowanceExemption, isDeduction: true },
+        { label: `Less: Allowance Exemption (min of ৳5,00,000 / 1/3 Total Income ${formatTaka(salaryThird)})`, value: -allowanceExemption, isDeduction: true },
         { label: 'TAXABLE INCOME', value: taxableIncome, isTotal: true },
         { label: 'Less: Tax-Free Threshold', value: -taxFreeLimit, isDeduction: true },
         { label: '', isDivider: true },
@@ -720,9 +720,9 @@ function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate
     if (investRebate > 0) tips.push(`✅ Investment rebate saves you ${formatTaka(investRebate)} tax — that's 10% of your investments (subject to 3% income limit).`);
 
     if (taxOnBasic > 0 && officePaidTax < taxOnBasic) {
-        tips.push(`🏢 Your Office Tax is capped at ৳${formatTaka(officePaidTax)}! Your employer assumes you will maximize your investment rebate. Since your expected tax after maximum rebate is ৳${formatTaka(assumedNetTaxByOffice)}, the office won't pay more than that even if the tax on your basic salary is higher (৳${formatTaka(taxOnBasic)}).`);
+        tips.push(`🏢 Your Office Tax is capped at ${formatTaka(officePaidTax)}! Your employer assumes you will maximize your investment rebate. Since your expected tax after maximum rebate is ${formatTaka(assumedNetTaxByOffice)}, the office won't pay more than that even if the tax on your basic salary is higher (${formatTaka(taxOnBasic)}).`);
     } else if (taxOnBasic > 0) {
-        tips.push(`🏢 Your Office fully pays your Tax on Basic (৳${formatTaka(taxOnBasic)}).`);
+        tips.push(`🏢 Your Office fully pays your Tax on Basic (${formatTaka(taxOnBasic)}).`);
     }
 
     tips.push('📝 File your e-Return at etaxnbr.gov.bd. Online filing is now mandatory for most taxpayers.');

@@ -781,8 +781,13 @@
                         <div class="pf-summary-box">
                             <div class="pf-title">Provident Fund</div>
                             <div class="pf-grid">
-                                <div class="pf-item">Your Contribution (6%) + Office (6%)<strong id="pf-employee">৳0</strong></div>
-                                <div class="pf-item" style="color:var(--accent-green)">✅ Rebate eligible (both shares)<strong id="pf-rebate-eligible" style="color:var(--accent-green)">৳0</strong></div>
+                                <div class="pf-item">Your Annual Contribution (default 6%)
+                                    <div class="input-wrapper"><span class="input-prefix">৳</span><input type="number" id="pf-employee-input" class="form-input" placeholder="Auto" min="0" oninput="this._manualOverride = true; calculate()"></div>
+                                </div>
+                                <div class="pf-item">Office Annual Contribution (default 6%)
+                                    <div class="input-wrapper"><span class="input-prefix">৳</span><input type="number" id="pf-office-input" class="form-input" placeholder="Auto" min="0" oninput="this._manualOverride = true; calculate()"></div>
+                                </div>
+                                <div class="pf-item" style="color:var(--accent-green)">Rebate eligible (both shares)<strong id="pf-rebate-eligible" style="color:var(--accent-green)">৳0</strong></div>
                             </div>
                         </div>
 

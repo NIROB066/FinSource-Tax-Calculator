@@ -226,7 +226,7 @@ function calculate() {
 
     // ── 7. Investment inputs (14 categories) ──
     const invLifeInsurance   = getVal('inv-life-insurance');
-    const invPF              = getVal('inv-provident-fund');  // auto-filled
+    const invPF              = pfInput?._manualOverride ? getVal('inv-provident-fund') : totalPF;
     const invGPF             = getVal('inv-gpf');
     const invSuperannuation  = getVal('inv-superannuation');
     const invBenevolent      = getVal('inv-benevolent');

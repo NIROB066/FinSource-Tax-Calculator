@@ -582,7 +582,7 @@
                                 <label for="taxpayer-type" class="form-label">Taxpayer Category <span class="tooltip-icon" data-tooltip="Different categories get different tax-free thresholds">?</span></label>
                                 <div class="select-wrapper">
                                     <select id="taxpayer-type" class="form-select" onchange="calculate()">
-                                        <option value="general">General Taxpayer — ৳3,75,000 free</option>
+                                        <option value="general">General Taxpayer — ৳4,00,000 free</option>
                                         <option value="women_senior">Women / Senior (65+) — ৳4,25,000 free</option>
                                         <option value="disabled">Person with Disability — ৳5,00,000 free</option>
                                         <option value="third_gender">Third Gender — ৳5,00,000 free</option>
@@ -714,7 +714,7 @@
                         <div class="addon-section-body" id="addon-body" style="display:none" aria-hidden="true">
 
                         <div class="form-group full-width" style="margin-bottom:10px">
-                            <label class="form-label">Bonuses <span class="tooltip-icon" data-tooltip="Festival bonuses = 60% of Aug basic × count. Performance bonuses = 20% of Aug basic × count.">?</span></label>
+                            <label class="form-label">Bonuses <span class="tooltip-icon" data-tooltip="The first bonus is 20% of July salary. Each additional bonus is 20% of August-June salary. Amounts are editable.">?</span></label>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                                 <div>
                                     <label class="form-label-sm">Festival Bonus count</label>
@@ -729,7 +729,7 @@
                                     <label class="form-label-sm">Total Festival Bonus (৳)</label>
                                     <div class="input-wrapper">
                                         <span class="input-prefix">৳</span>
-                                        <input type="number" id="festival-bonus-amt" class="form-input" placeholder="Auto" readonly style="background:rgba(255,255,255,0.04);color:var(--text-secondary);cursor:not-allowed;font-weight:600">
+                                        <input type="number" id="festival-bonus-amt" class="form-input" placeholder="Auto" min="0" oninput="this._manualOverride = this.value !== ''; calculate()" onchange="calculate()" style="font-weight:600">
                                     </div>
                                 </div>
                                 <div>
@@ -745,7 +745,7 @@
                                     <label class="form-label-sm">Total Performance Bonus (৳)</label>
                                     <div class="input-wrapper">
                                         <span class="input-prefix">৳</span>
-                                        <input type="number" id="perf-bonus-amt" class="form-input" placeholder="Auto" readonly style="background:rgba(255,255,255,0.04);color:var(--text-secondary);cursor:not-allowed;font-weight:600">
+                                        <input type="number" id="perf-bonus-amt" class="form-input" placeholder="Auto" min="0" oninput="this._manualOverride = this.value !== ''; calculate()" onchange="calculate()" style="font-weight:600">
                                     </div>
                                 </div>
                             </div>
@@ -846,8 +846,8 @@
                             <div class="inv-cat-item" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.05)">
                                 <div class="inv-cat-left">
                                     <div class="inv-cat-name">🏦 Recognized Provident Fund (RPF)</div>
-                                    <div class="inv-cat-desc">Employee + Employer share — auto-filled from your salary above</div>
-                                    <div class="inv-cat-limit">Auto-calculated from 12% of total salary</div>
+                                    <div class="inv-cat-desc">Employee + Employer share — auto-filled from your salary above and editable</div>
+                                    <div class="inv-cat-limit">Defaults to 12% of total salary</div>
                                 </div>
                                 <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-provident-fund" class="form-input" placeholder="auto" min="0" oninput="calculate()" onchange="calculate()" style="background:rgba(99,102,241,0.08)"></div>
                             </div>
@@ -1155,7 +1155,7 @@
                         <table class="ref-table">
                             <thead><tr><th>Taxable Income (BDT)</th><th>Rate</th></tr></thead>
                             <tbody>
-                                <tr><td>First ৳3,75,000</td><td class="rate-0">0%</td></tr>
+                                <tr><td>First ৳4,00,000</td><td class="rate-0">0%</td></tr>
                                 <tr><td>Next ৳3,00,000</td><td class="rate-10">10%</td></tr>
                                 <tr><td>Next ৳4,00,000</td><td class="rate-15">15%</td></tr>
                                 <tr><td>Next ৳5,00,000</td><td class="rate-20">20%</td></tr>
@@ -1169,7 +1169,7 @@
                         <table class="ref-table">
                             <thead><tr><th>Category</th><th>Limit (BDT)</th></tr></thead>
                             <tbody>
-                                <tr><td>General</td><td class="amount-col">৳3,75,000</td></tr>
+                                <tr><td>General</td><td class="amount-col">৳4,00,000</td></tr>
                                 <tr><td>Women / Senior (65+)</td><td class="amount-col">৳4,25,000</td></tr>
                                 <tr><td>Person with Disability</td><td class="amount-col">৳5,00,000</td></tr>
                                 <tr><td>Third Gender</td><td class="amount-col">৳5,00,000</td></tr>

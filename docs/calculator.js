@@ -31,7 +31,7 @@ const TAX_CONFIG = {
 
     // Tax-free thresholds
     TAX_FREE_LIMITS: {
-        general:        375000,
+        general:        400000,
         women_senior:   425000,
         disabled:       500000,
         third_gender:   500000,
@@ -160,16 +160,19 @@ function calculate() {
     const augLbl = document.getElementById('aug-months-label');
     if (augLbl) augLbl.textContent = augMonths;
 
-    // Auto-calculate bonuses based on count selector (0-2, default 2)
+    // The first bonus uses July salary; each subsequent bonus uses Aug-Jun salary.
     const festivalBonusCount = parseInt(document.getElementById('festival-bonus-count')?.value ?? '2') || 0;
     const perfBonusCount     = parseInt(document.getElementById('perf-bonus-count')?.value ?? '2') || 0;
-    const festivalBonusAmt = Math.round(augGross * 0.60 * festivalBonusCount);
-    const perfBonusAmt     = Math.round(augGross * 0.20 * perfBonusCount);
-
-    // Display them in the readonly fields
+    const calculateBonus = count => count > 0
+        ? Math.round((julyGross * 0.20) + (augGross * 0.20 * (count - 1)))
+        : 0;
     const festEl = document.getElementById('festival-bonus-amt');
-    if(festEl) festEl.value = festivalBonusAmt || '';
     const perfEl = document.getElementById('perf-bonus-amt');
+    const festivalBonusAmt = festEl?._manualOverride ? getVal('festival-bonus-amt') : calculateBonus(festivalBonusCount);
+    const perfBonusAmt     = perfEl?._manualOverride ? getVal('perf-bonus-amt') : calculateBonus(perfBonusCount);
+
+    // Keep calculated defaults until the user enters a manual amount.
+    if(festEl) festEl.value = festivalBonusAmt || '';
     if(perfEl) perfEl.value = perfBonusAmt || '';
 
     // ── 2. Salary Calculations (FinSource Rules) ──
@@ -317,6 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pfInput) {
         pfInput.addEventListener('input', () => { pfInput._manualOverride = pfInput.value !== ''; });
     }
+
+    ['festival-bonus-amt', 'perf-bonus-amt'].forEach(id => {
+        const bonusInput = document.getElementById(id);
+        if (bonusInput) {
+            bonusInput.addEventListener('input', () => { bonusInput._manualOverride = bonusInput.value !== ''; });
+        }
+    });
 });
 
 // ════════════════════════════════════════════════
@@ -707,7 +717,7 @@ function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate
     else if (filingQuarter === 'q3') tips.push('⚠️ Filing Jan–Mar means a 2% surcharge. File earlier next year (Jul–Sep) to get a 5% discount instead!');
     else if (filingQuarter === 'q4') tips.push('🚨 Filing Apr–Jun incurs 5% surcharge. File by September next year to save significant money!');
 
-    if (totalInvested === 0 && taxableIncome > 375000) {
+    if (totalInvested === 0 && taxableIncome > TAX_CONFIG.TAX_FREE_LIMITS.general) {
         tips.push('💡 No investments yet! With your income, you can potentially save tax. Start with PF, DPS (max ৳1,20,000/year), or Sanchayapatra.');
     }
 

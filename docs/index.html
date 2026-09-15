@@ -714,7 +714,7 @@
                         <div class="addon-section-body" id="addon-body" style="display:none" aria-hidden="true">
 
                         <div class="form-group full-width" style="margin-bottom:10px">
-                            <label class="form-label">Bonuses <span class="tooltip-icon" data-tooltip="The first bonus is 20% of July salary. Each additional bonus is 20% of August-June salary. Amounts are editable.">?</span></label>
+                            <label class="form-label">Bonuses <span class="tooltip-icon" data-tooltip="Festival bonus is 60% of the larger monthly salary for each bonus. Performance bonus is 20% of July salary for the first bonus and 20% of August-June salary for additional bonuses. Amounts are editable.">?</span></label>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                                 <div>
                                     <label class="form-label-sm">Festival Bonus count</label>
@@ -729,7 +729,7 @@
                                     <label class="form-label-sm">Total Festival Bonus (৳)</label>
                                     <div class="input-wrapper">
                                         <span class="input-prefix">৳</span>
-                                        <input type="number" id="festival-bonus-amt" class="form-input" placeholder="Auto" min="0" oninput="this._manualOverride = this.value !== ''; calculate()" onchange="calculate()" style="font-weight:600">
+                                        <input type="number" id="festival-bonus-amt" class="form-input" placeholder="Auto" min="0" oninput="this._manualOverride = true; calculate()" onchange="calculate()" style="font-weight:600">
                                     </div>
                                 </div>
                                 <div>
@@ -745,7 +745,7 @@
                                     <label class="form-label-sm">Total Performance Bonus (৳)</label>
                                     <div class="input-wrapper">
                                         <span class="input-prefix">৳</span>
-                                        <input type="number" id="perf-bonus-amt" class="form-input" placeholder="Auto" min="0" oninput="this._manualOverride = this.value !== ''; calculate()" onchange="calculate()" style="font-weight:600">
+                                        <input type="number" id="perf-bonus-amt" class="form-input" placeholder="Auto" min="0" oninput="this._manualOverride = true; calculate()" onchange="calculate()" style="font-weight:600">
                                     </div>
                                 </div>
                             </div>
@@ -849,7 +849,7 @@
                                     <div class="inv-cat-desc">Employee + Employer share — auto-filled from your salary above and editable</div>
                                     <div class="inv-cat-limit">Defaults to 12% of total salary</div>
                                 </div>
-                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-provident-fund" class="form-input" placeholder="auto" min="0" oninput="calculate()" onchange="calculate()" style="background:rgba(99,102,241,0.08)"></div>
+                                <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-provident-fund" class="form-input" placeholder="auto" min="0" oninput="this._manualOverride = true; calculate()" onchange="calculate()" style="background:rgba(99,102,241,0.08)"></div>
                             </div>
 
                             <!-- 3 GPF -->

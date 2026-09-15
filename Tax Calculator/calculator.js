@@ -160,16 +160,16 @@ function calculate() {
     const augLbl = document.getElementById('aug-months-label');
     if (augLbl) augLbl.textContent = augMonths;
 
-    // The first bonus uses July salary; each subsequent bonus uses Aug-Jun salary.
+    // Festival bonuses are 60% of the larger monthly salary; performance bonuses use the salary sequence.
     const festivalBonusCount = parseInt(document.getElementById('festival-bonus-count')?.value ?? '2') || 0;
     const perfBonusCount     = parseInt(document.getElementById('perf-bonus-count')?.value ?? '2') || 0;
-    const calculateBonus = count => count > 0
+    const calculatePerformanceBonus = count => count > 0
         ? Math.round((julyGross * 0.20) + (augGross * 0.20 * (count - 1)))
         : 0;
     const festEl = document.getElementById('festival-bonus-amt');
     const perfEl = document.getElementById('perf-bonus-amt');
-    const festivalBonusAmt = festEl?._manualOverride ? getVal('festival-bonus-amt') : calculateBonus(festivalBonusCount);
-    const perfBonusAmt     = perfEl?._manualOverride ? getVal('perf-bonus-amt') : calculateBonus(perfBonusCount);
+    const festivalBonusAmt = festEl?._manualOverride ? getVal('festival-bonus-amt') : Math.round(augGross * 0.60 * festivalBonusCount);
+    const perfBonusAmt     = perfEl?._manualOverride ? getVal('perf-bonus-amt') : calculatePerformanceBonus(perfBonusCount);
 
     // Keep calculated defaults until the user enters a manual amount.
     if(festEl) festEl.value = festivalBonusAmt || '';
@@ -318,13 +318,13 @@ function calculate() {
 document.addEventListener('DOMContentLoaded', () => {
     const pfInput = document.getElementById('inv-provident-fund');
     if (pfInput) {
-        pfInput.addEventListener('input', () => { pfInput._manualOverride = pfInput.value !== ''; });
+        pfInput.addEventListener('input', () => { pfInput._manualOverride = true; });
     }
 
     ['festival-bonus-amt', 'perf-bonus-amt'].forEach(id => {
         const bonusInput = document.getElementById(id);
         if (bonusInput) {
-            bonusInput.addEventListener('input', () => { bonusInput._manualOverride = bonusInput.value !== ''; });
+            bonusInput.addEventListener('input', () => { bonusInput._manualOverride = true; });
         }
     });
 });

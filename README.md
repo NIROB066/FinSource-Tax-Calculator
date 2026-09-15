@@ -60,7 +60,7 @@ Works on any device with a browser — desktop, mobile, tablet. No installation 
 
 | Category | Threshold |
 |---|---|
-| General | ৳3,75,000 |
+| General | ৳4,00,000 |
 | Women / Senior (65+) | ৳4,25,000 |
 | Person with Disability | ৳5,00,000 |
 | Third Gender | ৳5,00,000 |
@@ -71,7 +71,7 @@ Works on any device with a browser — desktop, mobile, tablet. No installation 
 
 | Taxable Income (BDT) | Rate |
 |---|---|
-| First ৳3,75,000 | 0% |
+| First ৳4,00,000 | 0% |
 | Next ৳3,00,000 | 10% |
 | Next ৳4,00,000 | 15% |
 | Next ৳5,00,000 | 20% |

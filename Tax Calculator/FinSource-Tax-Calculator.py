@@ -231,7 +231,7 @@ class TaxApp(tk.Tk):
                 'third_gender': 'TAX_FREE_THIRD_GENDER',
                 'freedom_fighter': 'TAX_FREE_FREEDOM_FIGHTER'
             }.get(t_type, 'TAX_FREE_GENERAL')
-            tax_free = C.get(tf_key, 375000)
+            tax_free = C.get(tf_key, 400000)
             
             if self.vars['has_disabled_child'].get():
                 tax_free += C.get('DISABLED_CHILD_EXTRA', 50000) * self.vars['disabled_child_count'].get()

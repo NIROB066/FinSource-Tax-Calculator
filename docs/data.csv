@@ -2,7 +2,7 @@ Key,Value,Description
 SALARY_BASIC_PCT,0.60,Basic salary percentage
 PF_EMPLOYEE_PCT,0.06,Provident fund employee share percentage
 PF_OFFICE_PCT,0.06,Provident fund office share percentage
-TAX_FREE_GENERAL,375000,Tax free limit for general individuals
+TAX_FREE_GENERAL,400000,Tax free limit for general individuals
 TAX_FREE_WOMEN_SENIOR,425000,Tax free limit for women & seniors
 TAX_FREE_DISABLED,500000,Tax free limit for disabled individuals
 TAX_FREE_THIRD_GENDER,500000,Tax free limit for third gender individuals

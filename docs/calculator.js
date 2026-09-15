@@ -186,8 +186,14 @@ function calculate() {
     const annBasic = Math.round(julyGross * C.SALARY_BASIC_PCT) + Math.round(augGross * C.SALARY_BASIC_PCT) * augMonths;
 
     // ── 3. Provident Fund (Office share added to Gross Income) ──
-    const annPFEmployee = Math.round(totalSalary * C.PF_EMPLOYEE_PCT);
-    const annPFOffice   = Math.round(totalSalary * C.PF_OFFICE_PCT);
+    const defaultPFEmployee = Math.round(totalSalary * C.PF_EMPLOYEE_PCT);
+    const defaultPFOffice   = Math.round(totalSalary * C.PF_OFFICE_PCT);
+    const pfEmployeeInput = document.getElementById('pf-employee-input');
+    const pfOfficeInput = document.getElementById('pf-office-input');
+    const annPFEmployee = pfEmployeeInput?._manualOverride ? getVal('pf-employee-input') : defaultPFEmployee;
+    const annPFOffice   = pfOfficeInput?._manualOverride ? getVal('pf-office-input') : defaultPFOffice;
+    if (pfEmployeeInput) pfEmployeeInput.value = annPFEmployee || '';
+    if (pfOfficeInput) pfOfficeInput.value = annPFOffice || '';
 
     // Auto-fill PF in investment field if user hasn't overridden it (Employer + Employee)
     const totalPF = annPFEmployee + annPFOffice;
@@ -197,9 +203,6 @@ function calculate() {
     }
 
     // ── 4. Update PF display ──
-    const pfEmpEl = document.getElementById('pf-employee');
-    if (pfEmpEl) pfEmpEl.textContent = formatTaka(annPFEmployee) + ' + Office ' + formatTaka(annPFOffice);
-    
     const pfRebEl = document.getElementById('pf-rebate-eligible');
     if (pfRebEl) pfRebEl.textContent = formatTaka(totalPF);
 
@@ -321,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pfInput.addEventListener('input', () => { pfInput._manualOverride = true; });
     }
 
-    ['festival-bonus-amt', 'perf-bonus-amt'].forEach(id => {
+    ['festival-bonus-amt', 'perf-bonus-amt', 'pf-employee-input', 'pf-office-input'].forEach(id => {
         const bonusInput = document.getElementById(id);
         if (bonusInput) {
             bonusInput.addEventListener('input', () => { bonusInput._manualOverride = true; });

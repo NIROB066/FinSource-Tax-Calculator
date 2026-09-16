@@ -150,9 +150,11 @@ function calculate() {
     const augGross  = getVal('aug-gross');
     const augMonths = parseInt(document.getElementById('aug-months')?.value) || 11;
 
-    // Extra Days Salary: (Aug-June salary / 30) * days
+    // Extra Days Salary: first 2 days at July rate (pre-increment), remaining days at Aug-June rate
     const extraDaysCount = parseInt(document.getElementById('extra-days-count')?.value) || 16;
-    const extraDaysSalary = Math.round((augGross / 30) * extraDaysCount);
+    const julyExtraDays = Math.min(2, extraDaysCount);
+    const augExtraDays  = Math.max(0, extraDaysCount - 2);
+    const extraDaysSalary = Math.round((julyGross / 30) * julyExtraDays + (augGross / 30) * augExtraDays);
     const extraDaysEl = document.getElementById('extra-days-salary');
     if (extraDaysEl) extraDaysEl.value = extraDaysSalary || '';
 
@@ -185,15 +187,15 @@ function calculate() {
     // Basic is only used to calculate Office Paid Tax and PF
     const annBasic = Math.round(julyGross * C.SALARY_BASIC_PCT) + Math.round(augGross * C.SALARY_BASIC_PCT) * augMonths;
 
-    // ── 3. Provident Fund (Office share added to Gross Income) ──
-    const defaultPFEmployee = Math.round(totalSalary * C.PF_EMPLOYEE_PCT);
-    const defaultPFOffice   = Math.round(totalSalary * C.PF_OFFICE_PCT);
+    // ── 3. Provident Fund (July salary and Aug-June salary computed separately, Office share added to Gross Income) ──
+    const defaultPFEmployee = Math.round(julyGross * C.PF_EMPLOYEE_PCT) + Math.round(augGross * C.PF_EMPLOYEE_PCT) * augMonths;
+    const defaultPFOffice   = Math.round(julyGross * C.PF_OFFICE_PCT) + Math.round(augGross * C.PF_OFFICE_PCT) * augMonths;
     const pfEmployeeInput = document.getElementById('pf-employee-input');
     const pfOfficeInput = document.getElementById('pf-office-input');
     const annPFEmployee = pfEmployeeInput?._manualOverride ? getVal('pf-employee-input') : defaultPFEmployee;
     const annPFOffice   = pfOfficeInput?._manualOverride ? getVal('pf-office-input') : defaultPFOffice;
-    if (pfEmployeeInput) pfEmployeeInput.value = annPFEmployee || '';
-    if (pfOfficeInput) pfOfficeInput.value = annPFOffice || '';
+    if (pfEmployeeInput && !pfEmployeeInput._manualOverride) pfEmployeeInput.value = annPFEmployee || '';
+    if (pfOfficeInput && !pfOfficeInput._manualOverride) pfOfficeInput.value = annPFOffice || '';
 
     // Auto-fill PF in investment field if user hasn't overridden it (Employer + Employee)
     const totalPF = annPFEmployee + annPFOffice;
@@ -220,8 +222,9 @@ function calculate() {
     let taxFreeLimit = C.TAX_FREE_LIMITS[taxpayerType] || C.TAX_FREE_LIMITS.general;
     taxFreeLimit += disabledChildCount * C.DISABLED_CHILD_EXTRA;
 
-    // ── 6. Office Paid Tax (Tax on Basic Only) ──
-    const officeSlabDetails = computeSlabs(annBasic, taxFreeLimit);
+    // ── 6. Office Paid Tax (Office counts both PF shares as income too) ──
+    const officeTaxBase = annBasic + annPFEmployee + annPFOffice;
+    const officeSlabDetails = computeSlabs(officeTaxBase, taxFreeLimit);
     const taxOnBasic = officeSlabDetails.totalTax;
 
     // ── 7. Investment inputs (14 categories) ──
@@ -300,16 +303,16 @@ function calculate() {
         grossIncome, allowanceExemption, taxableIncome,
         taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested,
         earlyFilingRebate, lateSurcharge,
-        netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice
+        netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice
     });
 
     updateSlabTable('slab-table', slabDetails, taxableIncome, 'Total Gross Tax');
-    updateSlabTable('office-slab-table', officeSlabDetails, annBasic, `Tax Computed on Basic Salary (${formatTaka(annBasic)})`);
+    updateSlabTable('office-slab-table', officeSlabDetails, officeTaxBase, `Tax Computed on Basic + PF (${formatTaka(officeTaxBase)})`);
     const officeHeader = document.getElementById('office-slab-title-header');
-    if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic Salary: ${formatTaka(annBasic)})`;
+    if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic + PF: ${formatTaka(officeTaxBase)})`;
     document.getElementById('office-slab-container').style.display = 'block';
     updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS: Math.min(getVal('inv-dps'), C.DPS_ANNUAL_LIMIT), invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
-    updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
+    updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
     updateMinTaxCard(minTaxApplied, areaType, grossTax, investRebate, minimumTax);
     updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice });
 
@@ -375,7 +378,7 @@ function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, in
     animateValue('final-payable-display', finalPayable);
     document.getElementById('net-tax-display').textContent    = formatTaka(netTax);
     
-    const reason = officePaidTax < taxOnBasic ? '(Capped by Assumed Net Tax)' : '(Tax on Basic)';
+    const reason = officePaidTax < taxOnBasic ? '(Capped by Assumed Net Tax)' : '(Tax on Basic+PF)';
     document.getElementById('net-tax-monthly').innerHTML      = `Office Pays: <span style="color:var(--text-primary);font-weight:800">${formatTaka(officePaidTax)}</span> <span style="font-size:10px; opacity:0.7; font-weight:500;">${reason}</span>`;
     
     document.getElementById('gross-tax-display').textContent  = formatTaka(grossTax);
@@ -494,7 +497,7 @@ function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebat
 }
 
 
-function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge, netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths = 11, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
+function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge, netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths = 11, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
     const container = document.getElementById('steps-visual');
     if (!container) return;
 
@@ -511,7 +514,7 @@ function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, tax
     if (lateSurcharge > 0)     steps.push({ n: 7, cls: 'step-c4', title: '(+) Late Filing Surcharge', detail: qConfig.label, amount: lateSurcharge });
 
     steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Total Net Tax', detail: 'After all rebates & surcharges', amount: netTax, isResult: true });
-    steps.push({ n: steps.length + 1, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: `min(Tax on Basic ${formatTaka(taxOnBasic)}, Assumed Net Tax ${formatTaka(assumedNetTaxByOffice)})`, amount: -officePaidTax, isDeduction: true });
+    steps.push({ n: steps.length + 1, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: `min(Tax on Basic+PF ${formatTaka(taxOnBasic)}, Assumed Net Tax ${formatTaka(assumedNetTaxByOffice)}) | Base: Basic ${formatTaka(annBasic)} + PF ${formatTaka(annPFEmployee + annPFOffice)}`, amount: -officePaidTax, isDeduction: true });
     steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Final Payable By You', detail: 'Total Net Tax − Office Contribution', amount: finalPayable, isResult: true });
 
     container.innerHTML = steps.map((s, i) => `
@@ -641,7 +644,7 @@ function updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, 
 }
 
 
-function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
+function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
     const container = document.getElementById('computation-table');
     if (!container) return;
     container.innerHTML = '';
@@ -653,7 +656,7 @@ function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt
         { label: 'Festival Bonuses', value: festivalBonusAmt, indent: true },
         { label: 'Performance Bonuses', value: perfBonusAmt, indent: true },
         { label: 'Total Salary Income', value: annGrossSalary, isSubtotal: true },
-        { label: 'Employer PF Contribution', value: Math.round(totalSalary * TAX_CONFIG.PF_OFFICE_PCT), indent: true },
+        { label: 'Employer PF Contribution', value: annPFOffice, indent: true },
         { label: 'Other Income', value: otherIncome },
         { label: 'TOTAL GROSS INCOME', value: grossIncome, isSubtotal: true },
         { label: `Less: Allowance Exemption (min of ৳5,00,000 / 1/3 Total Income ${formatTaka(salaryThird)})`, value: -allowanceExemption, isDeduction: true },
@@ -669,11 +672,13 @@ function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt
         lateSurcharge > 0 ? { label: `⚠ Late Filing Surcharge (${qConfig.label})`, value: lateSurcharge, isSurcharge: true } : null,
         { label: 'Net Tax Payable', value: netTax, isSubtotal: true },
         { label: '', isDivider: true },
-        { label: 'C. OFFICE CONTRIBUTION (TAX ON BASIC)', isHeader: true },
+        { label: 'C. OFFICE CONTRIBUTION (TAX ON BASIC + PF)', isHeader: true },
         { label: 'Annual Basic Salary (60% of Salary)', value: annBasic },
-        { label: 'Computed Tax on Basic', value: taxOnBasic },
+        { label: 'Add: PF Contribution (Employee + Office)', value: annPFEmployee + annPFOffice, indent: true },
+        { label: 'Office Taxable Base (Basic + PF)', value: officeTaxBase, isSubtotal: true },
+        { label: 'Computed Tax on Basic + PF', value: taxOnBasic },
         { label: 'Office Assumed Net Tax (Gross Tax − Max Rebate)', value: assumedNetTaxByOffice, note: true },
-        { label: `Less: Tax Paid by Office (min of Tax on Basic or Assumed Net Tax)`, value: -officePaidTax, isDeduction: true },
+        { label: `Less: Tax Paid by Office (min of Tax on Basic+PF or Assumed Net Tax)`, value: -officePaidTax, isDeduction: true },
         { label: '', isDivider: true },
         { label: 'FINAL TAX PAYABLE BY YOU', value: finalPayable, isTotal: true }
     ].filter(Boolean);
@@ -733,9 +738,9 @@ function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate
     if (investRebate > 0) tips.push(`✅ Investment rebate saves you ${formatTaka(investRebate)} tax — that's 10% of your investments (subject to 3% income limit).`);
 
     if (taxOnBasic > 0 && officePaidTax < taxOnBasic) {
-        tips.push(`🏢 Your Office Tax is capped at ${formatTaka(officePaidTax)}! Your employer assumes you will maximize your investment rebate. Since your expected tax after maximum rebate is ${formatTaka(assumedNetTaxByOffice)}, the office won't pay more than that even if the tax on your basic salary is higher (${formatTaka(taxOnBasic)}).`);
+        tips.push(`🏢 Your Office Tax is capped at ${formatTaka(officePaidTax)}! Your employer assumes you will maximize your investment rebate. Since your expected tax after maximum rebate is ${formatTaka(assumedNetTaxByOffice)}, the office won't pay more than that even if the tax on your basic salary + PF is higher (${formatTaka(taxOnBasic)}).`);
     } else if (taxOnBasic > 0) {
-        tips.push(`🏢 Your Office fully pays your Tax on Basic (${formatTaka(taxOnBasic)}).`);
+        tips.push(`🏢 Your Office fully pays your Tax on Basic+PF (${formatTaka(taxOnBasic)}).`);
     }
 
     tips.push('📝 File your e-Return at etaxnbr.gov.bd. Online filing is now mandatory for most taxpayers.');

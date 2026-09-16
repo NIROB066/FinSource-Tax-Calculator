@@ -230,8 +230,8 @@ function calculate() {
     let taxFreeLimit = C.TAX_FREE_LIMITS[taxpayerType] || C.TAX_FREE_LIMITS.general;
     taxFreeLimit += disabledChildCount * C.DISABLED_CHILD_EXTRA;
 
-    // ── 6. Office Paid Tax (Office counts both PF shares as income too) ──
-    const officeTaxBase = annBasic + annPFEmployee + annPFOffice;
+    // ── 6. Office Paid Tax (base = Basic + the employee's own PF contribution) ──
+    const officeTaxBase = annBasic + annPFEmployee;
     const officeSlabDetails = computeSlabs(officeTaxBase, taxFreeLimit);
     const taxOnBasic = officeSlabDetails.totalTax;
 
@@ -271,15 +271,21 @@ function calculate() {
     const grossTax = slabDetails.totalTax;
 
     // ── 9.5 Office Paid Tax Calculation ──
+    const minimumTax = C.MINIMUM_TAX[areaType] || 0;
+    const isAboveThreshold = taxableIncome > taxFreeLimit;
     // Office assumes employee will invest up to max capacity
     const assumedNetTaxByOffice = Math.max(0, grossTax - maxRebatePossible);
-    // Office pays the tax on basic, but never more than the assumed net tax
-    const officePaidTax = Math.min(taxOnBasic, assumedNetTaxByOffice);
+    // Office pays the tax on basic + employee PF, but never more than the assumed net tax
+    let officePaidTax = Math.min(taxOnBasic, assumedNetTaxByOffice);
+    // Minimum tax stays due even after a full rebate, so the office covers it.
+    let officeMinTaxApplied = false;
+    if (isAboveThreshold && assumedNetTaxByOffice < minimumTax) {
+        officePaidTax = minimumTax;
+        officeMinTaxApplied = true;
+    }
 
     // ── 10. Net tax after rebate ──
     const taxAfterRebate = Math.max(0, grossTax - investRebate);
-    const minimumTax = C.MINIMUM_TAX[areaType] || 0;
-    const isAboveThreshold = taxableIncome > taxFreeLimit;
     let netTax = taxAfterRebate;
     let minTaxApplied = false;
     if (isAboveThreshold && taxAfterRebate < minimumTax) {
@@ -308,7 +314,7 @@ function calculate() {
     // ── 14. Update all UI ──
     updateIncomeStrip(grossIncome, allowanceExemption, taxableIncome);
     updateInvestmentBar(totalInvested, admissibleRebate, threePctIncome);
-    updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig, officePaidTax, taxOnBasic });
+    updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig, officePaidTax, taxOnBasic, officeMinTaxApplied });
     updateOpportunityDashboard({ threePctIncome, totalInvested, investRebate, grossIncome, taxableIncome, allowanceExemption });
     
     updateStepsVisual({
@@ -319,9 +325,9 @@ function calculate() {
     });
 
     updateSlabTable('slab-table', slabDetails, taxableIncome, 'Total Gross Tax');
-    updateSlabTable('office-slab-table', officeSlabDetails, officeTaxBase, `Tax Computed on Basic + PF (${formatTaka(officeTaxBase)})`);
+    updateSlabTable('office-slab-table', officeSlabDetails, officeTaxBase, `Tax Computed on Basic + Employee PF (${formatTaka(officeTaxBase)})`);
     const officeHeader = document.getElementById('office-slab-title-header');
-    if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic + PF: ${formatTaka(officeTaxBase)})`;
+    if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic + Employee PF: ${formatTaka(officeTaxBase)})`;
     document.getElementById('office-slab-container').style.display = 'block';
     updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS, invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
     updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
@@ -386,15 +392,15 @@ function updateInvestmentBar(totalInvested, admissibleRebate, threePctIncome) {
     document.getElementById('invest-progress').style.width = pct + '%';
 }
 
-function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig, officePaidTax, taxOnBasic }) {
+function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig, officePaidTax, taxOnBasic, officeMinTaxApplied }) {
     animateValue('final-payable-display', finalPayable);
     document.getElementById('net-tax-display').textContent    = formatTaka(netTax);
     
-    const reason = officePaidTax < taxOnBasic ? '(Capped by Assumed Net Tax)' : '(Tax on Basic+PF)';
+    const reason = officeMinTaxApplied ? '(Minimum Tax)' : (officePaidTax < taxOnBasic ? '(Capped by Assumed Net Tax)' : '(Tax on Basic + Employee PF)');
     document.getElementById('net-tax-monthly').innerHTML      = `Office Pays: <span style="color:var(--text-primary);font-weight:800">${formatTaka(officePaidTax)}</span> <span style="font-size:10px; opacity:0.7; font-weight:500;">${reason}</span>`;
     
     document.getElementById('gross-tax-display').textContent  = formatTaka(grossTax);
-    document.getElementById('rebate-display').textContent     = formatTaka(investRebate + earlyFilingRebate);
+    document.getElementById('rebate-display').textContent     = formatTaka(investRebate);
 
     const badge = document.getElementById('filing-quarter-result');
     if (badge) {
@@ -519,14 +525,14 @@ function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, tax
         { n: 3, cls: 'step-c3', title: '= Taxable Income', detail: 'Gross Income − Allowance Exemption', amount: taxableIncome, isResult: true },
         { n: 4, cls: 'step-c1', title: '(−) Tax-Free Threshold', detail: `Your category's tax-free limit`, amount: -taxFreeLimit, isDeduction: true },
         { n: 5, cls: 'step-c3', title: 'Gross Tax (from slabs)', detail: 'Progressive slab-wise calculation below', amount: grossTax },
-        { n: 6, cls: 'step-c2', title: '(−) Investment Rebate', detail: `min(10% of investment, 3% of taxable income, ৳7.5L) | Total invested: ${formatTaka(totalInvested)}`, amount: -investRebate, isDeduction: true },
+        { n: 6, cls: 'step-c2', title: '(−) Investment Rebate', detail: `min(${getSetting('rebate-rate-pct', TAX_CONFIG.REBATE_RATE * 100)}% of investment, 3% of taxable income, ${formatTaka(getSetting('rebate-max-absolute', TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE))}) | Total invested: ${formatTaka(totalInvested)}`, amount: -investRebate, isDeduction: true },
     ];
 
     if (earlyFilingRebate > 0) steps.push({ n: 7, cls: 'step-c2', title: '(−) Early Filing Rebate', detail: `5% of net tax (max ৳25,000) — ${qConfig.label}`, amount: -earlyFilingRebate, isDeduction: true });
     if (lateSurcharge > 0)     steps.push({ n: 7, cls: 'step-c4', title: '(+) Late Filing Surcharge', detail: qConfig.label, amount: lateSurcharge });
 
     steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Total Net Tax', detail: 'After all rebates & surcharges', amount: netTax, isResult: true });
-    steps.push({ n: steps.length + 1, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: `min(Tax on Basic+PF ${formatTaka(taxOnBasic)}, Assumed Net Tax ${formatTaka(assumedNetTaxByOffice)}) | Base: Basic ${formatTaka(annBasic)} + PF ${formatTaka(annPFEmployee + annPFOffice)}`, amount: -officePaidTax, isDeduction: true });
+    steps.push({ n: steps.length + 1, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: `min(Tax on Basic + Employee PF ${formatTaka(taxOnBasic)}, Assumed Net Tax ${formatTaka(assumedNetTaxByOffice)}) | Base: Basic ${formatTaka(annBasic)} + Employee PF ${formatTaka(annPFEmployee)}`, amount: -officePaidTax, isDeduction: true });
     steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Final Payable By You', detail: 'Total Net Tax − Office Contribution', amount: finalPayable, isResult: true });
 
     container.innerHTML = steps.map((s, i) => `
@@ -592,7 +598,7 @@ function updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, 
     const container = document.getElementById('inv-chart');
     if (!container) return;
 
-    const maxInvestmentCap = threePctIncome / TAX_CONFIG.REBATE_RATE;
+    const maxInvestmentCap = threePctIncome / (getSetting('rebate-rate-pct', TAX_CONFIG.REBATE_RATE * 100) / 100);
     const maxCap = Math.max(maxInvestmentCap, totalInvested, 1);
 
     let html = '';
@@ -677,20 +683,20 @@ function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt
         { label: '', isDivider: true },
         { label: 'B. TAX CALCULATION', isHeader: true },
         { label: 'Gross Tax (Slab-wise)', value: grossTax },
-        { label: 'Less: Investment Rebate (min of 10% of invest or 3% of income)', value: -investRebate, isDeduction: true },
+        { label: `Less: Investment Rebate (min of ${getSetting('rebate-rate-pct', TAX_CONFIG.REBATE_RATE * 100)}% of invest or 3% of income)`, value: -investRebate, isDeduction: true },
         { label: 'Tax After Investment Rebate', value: Math.max(0, grossTax - investRebate), isSubtotal: true },
         minTaxApplied ? { label: `⚠ Minimum Tax Applied (${formatTaka(minimumTax)})`, value: minimumTax, note: true } : null,
         earlyFilingRebate > 0 ? { label: '🎉 Early Filing Rebate (Jul–Sep 5%, max ৳25,000)', value: -earlyFilingRebate, isDeduction: true } : null,
         lateSurcharge > 0 ? { label: `⚠ Late Filing Surcharge (${qConfig.label})`, value: lateSurcharge, isSurcharge: true } : null,
         { label: 'Net Tax Payable', value: netTax, isSubtotal: true },
         { label: '', isDivider: true },
-        { label: 'C. OFFICE CONTRIBUTION (TAX ON BASIC + PF)', isHeader: true },
+        { label: 'C. OFFICE CONTRIBUTION (TAX ON BASIC + EMPLOYEE PF)', isHeader: true },
         { label: 'Annual Basic Salary (60% of Salary)', value: annBasic },
-        { label: 'Add: PF Contribution (Employee + Office)', value: annPFEmployee + annPFOffice, indent: true },
-        { label: 'Office Taxable Base (Basic + PF)', value: officeTaxBase, isSubtotal: true },
-        { label: 'Computed Tax on Basic + PF', value: taxOnBasic },
+        { label: 'Add: Employee PF Contribution', value: annPFEmployee, indent: true },
+        { label: 'Office Taxable Base (Basic + Employee PF)', value: officeTaxBase, isSubtotal: true },
+        { label: 'Computed Tax on Basic + Employee PF', value: taxOnBasic },
         { label: 'Office Assumed Net Tax (Gross Tax − Max Rebate)', value: assumedNetTaxByOffice, note: true },
-        { label: `Less: Tax Paid by Office (min of Tax on Basic+PF or Assumed Net Tax)`, value: -officePaidTax, isDeduction: true },
+        { label: `Less: Tax Paid by Office (min of Tax on Basic + Employee PF or Assumed Net Tax)`, value: -officePaidTax, isDeduction: true },
         { label: '', isDivider: true },
         { label: 'FINAL TAX PAYABLE BY YOU', value: finalPayable, isTotal: true }
     ].filter(Boolean);
@@ -750,9 +756,9 @@ function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate
     if (investRebate > 0) tips.push(`✅ Investment rebate saves you ${formatTaka(investRebate)} tax — that's 10% of your investments (subject to 3% income limit).`);
 
     if (taxOnBasic > 0 && officePaidTax < taxOnBasic) {
-        tips.push(`🏢 Your Office Tax is capped at ${formatTaka(officePaidTax)}! Your employer assumes you will maximize your investment rebate. Since your expected tax after maximum rebate is ${formatTaka(assumedNetTaxByOffice)}, the office won't pay more than that even if the tax on your basic salary + PF is higher (${formatTaka(taxOnBasic)}).`);
+        tips.push(`🏢 Your Office Tax is capped at ${formatTaka(officePaidTax)}! Your employer assumes you will maximize your investment rebate. Since your expected tax after maximum rebate is ${formatTaka(assumedNetTaxByOffice)}, the office won't pay more than that even if the tax on your basic salary + employee PF is higher (${formatTaka(taxOnBasic)}).`);
     } else if (taxOnBasic > 0) {
-        tips.push(`🏢 Your Office fully pays your Tax on Basic+PF (${formatTaka(taxOnBasic)}).`);
+        tips.push(`🏢 Your Office fully pays your Tax on Basic + Employee PF (${formatTaka(taxOnBasic)}).`);
     }
 
     tips.push('📝 File your e-Return at etaxnbr.gov.bd. Online filing is now mandatory for most taxpayers.');

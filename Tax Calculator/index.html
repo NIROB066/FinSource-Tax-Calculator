@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Bangladesh Income Tax Calculator 2025-26 | FinSource | NBR Compliant</title>
     <meta name="description" content="Bangladesh income tax calculator FY 2025-26 with monthly salary breakdown, TDS schedule, investment rebate chart, and all NBR rules.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20260916">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#10b981">
     <meta name="mobile-web-app-capable" content="yes">
@@ -1043,7 +1046,7 @@
                                 <div class="mini-value" id="gross-tax-display">৳0</div>
                             </div>
                             <div class="result-mini-card green-card">
-                                <div class="mini-label">Total Rebate</div>
+                                <div class="mini-label">Investment Rebate</div>
                                 <div class="mini-value green" id="rebate-display">৳0</div>
                             </div>
                             <div class="result-mini-card">
@@ -1287,15 +1290,24 @@
 
     <!-- Print Report Overlay -->
     <div id="print-overlay"></div>
-    <script src="calculator.js?v=20260622"></script>
+    <script src="calculator.js?v=20260916"></script>
     <script>
         let deferredInstallPrompt = null;
 
         if ('serviceWorker' in navigator) {
+            // Reload once when a new worker takes control so fresh assets are used immediately.
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
+
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
+                navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
                     .then(registration => {
                         console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        registration.update();
                         if (registration.waiting) {
                             registration.waiting.postMessage({ type: 'SKIP_WAITING' });
                         }

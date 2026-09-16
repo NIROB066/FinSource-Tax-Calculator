@@ -1,10 +1,10 @@
-const STATIC_CACHE = 'finsource-tax-static-v2';
-const RUNTIME_CACHE = 'finsource-tax-runtime-v2';
+const STATIC_CACHE = 'finsource-tax-static-v20260916';
+const RUNTIME_CACHE = 'finsource-tax-runtime-v20260916';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css',
-  './calculator.js?v=20260622',
+  './styles.css?v=20260916',
+  './calculator.js?v=20260916',
   './manifest.json',
   './icon.png',
   './sw.js'
@@ -13,7 +13,7 @@ const APP_SHELL = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then((cache) => cache.addAll(APP_SHELL))
+      .then((cache) => cache.addAll(APP_SHELL.map((url) => new Request(url, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
@@ -52,28 +52,36 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (event.request.mode === 'navigate') {
-    event.respondWith(networkFirst(event.request, './index.html'));
+    event.respondWith(networkFirst(event.request));
     return;
   }
 
-  event.respondWith(staleWhileRevalidate(event.request, STATIC_CACHE));
+  // Network-first everywhere so a new deployment is served immediately; cache is an offline fallback only.
+  event.respondWith(networkFirst(event.request));
 });
 
-async function networkFirst(request, fallbackUrl) {
+async function networkFirst(request) {
   const cache = await caches.open(RUNTIME_CACHE);
 
   try {
-    const response = await fetch(request);
-    cache.put(request, response.clone());
+    const response = await fetch(request, { cache: 'no-store' });
+    if (response && response.ok) {
+      cache.put(request, response.clone());
+    }
     return response;
   } catch (error) {
-    const cachedResponse = await cache.match(request);
+    const cachedResponse = await cache.match(request) || await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
 
-    const fallbackCache = await caches.open(STATIC_CACHE);
-    return fallbackCache.match(fallbackUrl);
+    if (request.mode === 'navigate') {
+      const fallbackCache = await caches.open(STATIC_CACHE);
+      const fallback = await fallbackCache.match('./index.html');
+      if (fallback) return fallback;
+    }
+
+    throw error;
   }
 }
 

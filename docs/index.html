@@ -623,18 +623,6 @@
                                     <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
                             </div>
-                            <div class="form-group full-width">
-                                <label for="filing-quarter" class="form-label">When will you file your Return? <span class="tooltip-icon" data-tooltip="July–Sep: 5% rebate on net tax (max ৳25,000). Jan–Mar: +2% surcharge. Apr–Jun: +5% surcharge.">?</span></label>
-                                <div class="select-wrapper">
-                                    <select id="filing-quarter" class="form-select" onchange="calculate()">
-                                        <option value="q1" selected>🎉 July – September (Early Filing: 5% rebate, max ৳25,000)</option>
-                                        <option value="q2">✅ October – December (Standard — no change)</option>
-                                        <option value="q3">⚠️ January – March (Late: +2% surcharge, min ৳3,000)</option>
-                                        <option value="q4">🚨 April – June (Very Late: +5% surcharge, min ৳5,000)</option>
-                                    </select>
-                                    <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -1038,7 +1026,6 @@
                             <div class="result-main-label">Final Tax Payable By You (Annual)</div>
                             <div class="result-main-value" id="final-payable-display">৳0</div>
                             <div class="result-main-sub" id="net-tax-monthly" style="color:var(--accent-green);font-weight:700">Office Pays: ৳0 (Tax on Basic)</div>
-                            <div id="filing-quarter-result" class="filing-badge" style="display:none"></div>
                         </div>
                         <div class="result-cards-row">
                             <div class="result-mini-card">
@@ -1216,9 +1203,6 @@
                             <div class="rule-item"><span class="rule-bullet">④</span><span>Rebate = 10% of admissible investment</span></div>
                             <div class="rule-item"><span class="rule-bullet">⑤</span><span>Max Rebate = min(3% of taxable income, ৳7,50,000)</span></div>
                             <div class="rule-item" style="color:var(--accent-amber)"><span class="rule-bullet">⑥</span><span><strong>OFFICE TDS:</strong> Your employer assumes you'll max out your investment rebate. Office pays min(Tax on Basic, Net Tax assuming max rebate).</span></div>
-                            <div class="rule-item" style="color:var(--accent-green)"><span class="rule-bullet">⑦</span><span><strong>NEW:</strong> File Jul–Sep → 5% rebate on net tax (max ৳25,000)</span></div>
-                            <div class="rule-item" style="color:var(--accent-amber)"><span class="rule-bullet">⑧</span><span><strong>NEW:</strong> File Jan–Mar → +2% surcharge (min ৳3,000)</span></div>
-                            <div class="rule-item" style="color:var(--accent-red)"><span class="rule-bullet">⑨</span><span><strong>NEW:</strong> File Apr–Jun → +5% surcharge (min ৳5,000)</span></div>
                         </div>
                     </div>
                     <div class="ref-card">
@@ -1745,7 +1729,7 @@
             setEl('mob-final-tax', fmt(data.finalPayable));
             setEl('mob-office-tax', fmt(data.officePaidTax));
             setEl('mob-gross-tax', fmt(data.grossTax));
-            setEl('mob-rebate', fmt((data.investRebate || 0) + (data.earlyFilingRebate || 0)));
+            setEl('mob-rebate', fmt(data.investRebate || 0));
             setEl('mob-net-tax', fmt(data.netTax));
         };
 

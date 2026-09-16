@@ -63,14 +63,6 @@ const TAX_CONFIG = {
     MAX_ALLOWANCE_EXEMPTION:  500000,
     ALLOWANCE_BASIC_PCT:      1/3,
 
-    // Quarterly filing rules
-    FILING_QUARTERS: {
-        q1: { label: 'July–September', rebatePct: 0.05, maxRebate: 25000, surcharge: 0, minSurcharge: 0 },
-        q2: { label: 'October–December', rebatePct: 0, maxRebate: 0, surcharge: 0, minSurcharge: 0 },
-        q3: { label: 'January–March', rebatePct: 0, maxRebate: 0, surcharge: 0.02, minSurcharge: 3000 },
-        q4: { label: 'April–June', rebatePct: 0, maxRebate: 0, surcharge: 0.05, minSurcharge: 5000 },
-    },
-
     MONTHS: ['July','August','September','October','November','December','January','February','March','April','May','June'],
 };
 
@@ -148,7 +140,6 @@ function calculate() {
     // ── 1. Read inputs ──
     const taxpayerType   = document.getElementById('taxpayer-type').value;
     const areaType       = document.getElementById('area-type').value;
-    const filingQuarter  = document.getElementById('filing-quarter')?.value || 'q2';
     const hasDisabledChild   = document.getElementById('disabled-child').checked;
     const disabledChildCount = hasDisabledChild ? (parseInt(document.getElementById('disabled-child-count').value) || 1) : 0;
     
@@ -293,17 +284,6 @@ function calculate() {
         minTaxApplied = true;
     }
 
-    // ── 11. Filing quarter adjustment ──
-    const qConfig = C.FILING_QUARTERS[filingQuarter] || C.FILING_QUARTERS.q2;
-    let earlyFilingRebate = 0, lateSurcharge = 0;
-    if (qConfig.rebatePct > 0) {
-        earlyFilingRebate = Math.min(Math.round(netTax * qConfig.rebatePct), qConfig.maxRebate);
-        netTax = Math.max(isAboveThreshold ? minimumTax : 0, netTax - earlyFilingRebate);
-    } else if (qConfig.surcharge > 0) {
-        lateSurcharge = Math.max(Math.round(netTax * qConfig.surcharge), qConfig.minSurcharge);
-        netTax += lateSurcharge;
-    }
-
     // ── 12. Final Tax Payable ──
     const finalPayable = Math.max(0, netTax - officePaidTax);
 
@@ -314,14 +294,13 @@ function calculate() {
     // ── 14. Update all UI ──
     updateIncomeStrip(grossIncome, allowanceExemption, taxableIncome);
     updateInvestmentBar(totalInvested, admissibleRebate, threePctIncome);
-    updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig, officePaidTax, taxOnBasic, officeMinTaxApplied });
+    updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, effectiveRate, officePaidTax, taxOnBasic, officeMinTaxApplied });
     updateOpportunityDashboard({ threePctIncome, totalInvested, investRebate, grossIncome, taxableIncome, allowanceExemption });
     
     updateStepsVisual({
         grossIncome, allowanceExemption, taxableIncome,
         taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested,
-        earlyFilingRebate, lateSurcharge,
-        netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice
+        netTax, officePaidTax, finalPayable, salaryThird, augMonths, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice
     });
 
     updateSlabTable('slab-table', slabDetails, taxableIncome, 'Total Gross Tax');
@@ -330,12 +309,12 @@ function calculate() {
     if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic + Employee PF: ${formatTaka(officeTaxBase)})`;
     document.getElementById('office-slab-container').style.display = 'block';
     updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS, invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
-    updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
+    updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, officePaidTax, finalPayable, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
     updateMinTaxCard(minTaxApplied, areaType, grossTax, investRebate, minimumTax);
-    updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice });
+    updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice });
 
     // Update mobile floating summary card (if on mobile)
-    if (typeof updateMobileSummary === 'function') updateMobileSummary({ finalPayable, grossTax, investRebate, earlyFilingRebate, officePaidTax, netTax });
+    if (typeof updateMobileSummary === 'function') updateMobileSummary({ finalPayable, grossTax, investRebate, officePaidTax, netTax });
 }
 
 // Mark PF field as manually overridden if user types in it
@@ -392,7 +371,7 @@ function updateInvestmentBar(totalInvested, admissibleRebate, threePctIncome) {
     document.getElementById('invest-progress').style.width = pct + '%';
 }
 
-function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, earlyFilingRebate, lateSurcharge, effectiveRate, filingQuarter, qConfig, officePaidTax, taxOnBasic, officeMinTaxApplied }) {
+function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, effectiveRate, officePaidTax, taxOnBasic, officeMinTaxApplied }) {
     animateValue('final-payable-display', finalPayable);
     document.getElementById('net-tax-display').textContent    = formatTaka(netTax);
     
@@ -401,21 +380,6 @@ function updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, in
     
     document.getElementById('gross-tax-display').textContent  = formatTaka(grossTax);
     document.getElementById('rebate-display').textContent     = formatTaka(investRebate);
-
-    const badge = document.getElementById('filing-quarter-result');
-    if (badge) {
-        if (earlyFilingRebate > 0) {
-            badge.textContent = `🎉 Early Filing Bonus: −${formatTaka(earlyFilingRebate)}`;
-            badge.className = 'filing-badge filing-bonus';
-            badge.style.display = 'flex';
-        } else if (lateSurcharge > 0) {
-            badge.textContent = `⚠️ Late Surcharge: +${formatTaka(lateSurcharge)} (${qConfig.label})`;
-            badge.className = 'filing-badge filing-penalty';
-            badge.style.display = 'flex';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
 }
 
 let animTarget = 0;
@@ -515,7 +479,7 @@ function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebat
 }
 
 
-function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested, earlyFilingRebate, lateSurcharge, netTax, officePaidTax, finalPayable, qConfig, salaryThird, augMonths = 11, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
+function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, threePctIncome, totalInvested, netTax, officePaidTax, finalPayable, salaryThird, augMonths = 11, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
     const container = document.getElementById('steps-visual');
     if (!container) return;
 
@@ -527,9 +491,6 @@ function updateStepsVisual({ grossIncome, allowanceExemption, taxableIncome, tax
         { n: 5, cls: 'step-c3', title: 'Gross Tax (from slabs)', detail: 'Progressive slab-wise calculation below', amount: grossTax },
         { n: 6, cls: 'step-c2', title: '(−) Investment Rebate', detail: `min(${getSetting('rebate-rate-pct', TAX_CONFIG.REBATE_RATE * 100)}% of investment, 3% of taxable income, ${formatTaka(getSetting('rebate-max-absolute', TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE))}) | Total invested: ${formatTaka(totalInvested)}`, amount: -investRebate, isDeduction: true },
     ];
-
-    if (earlyFilingRebate > 0) steps.push({ n: 7, cls: 'step-c2', title: '(−) Early Filing Rebate', detail: `5% of net tax (max ৳25,000) — ${qConfig.label}`, amount: -earlyFilingRebate, isDeduction: true });
-    if (lateSurcharge > 0)     steps.push({ n: 7, cls: 'step-c4', title: '(+) Late Filing Surcharge', detail: qConfig.label, amount: lateSurcharge });
 
     steps.push({ n: steps.length + 1, cls: 'step-c3', title: '= Total Net Tax', detail: 'After all rebates & surcharges', amount: netTax, isResult: true });
     steps.push({ n: steps.length + 1, cls: 'step-c2', title: '(−) Tax Paid By Office', detail: `min(Tax on Basic + Employee PF ${formatTaka(taxOnBasic)}, Assumed Net Tax ${formatTaka(assumedNetTaxByOffice)}) | Base: Basic ${formatTaka(annBasic)} + Employee PF ${formatTaka(annPFEmployee)}`, amount: -officePaidTax, isDeduction: true });
@@ -662,7 +623,7 @@ function updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, 
 }
 
 
-function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
+function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, officePaidTax, finalPayable, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice }) {
     const container = document.getElementById('computation-table');
     if (!container) return;
     container.innerHTML = '';
@@ -686,8 +647,6 @@ function updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt
         { label: `Less: Investment Rebate (min of ${getSetting('rebate-rate-pct', TAX_CONFIG.REBATE_RATE * 100)}% of invest or 3% of income)`, value: -investRebate, isDeduction: true },
         { label: 'Tax After Investment Rebate', value: Math.max(0, grossTax - investRebate), isSubtotal: true },
         minTaxApplied ? { label: `⚠ Minimum Tax Applied (${formatTaka(minimumTax)})`, value: minimumTax, note: true } : null,
-        earlyFilingRebate > 0 ? { label: '🎉 Early Filing Rebate (Jul–Sep 5%, max ৳25,000)', value: -earlyFilingRebate, isDeduction: true } : null,
-        lateSurcharge > 0 ? { label: `⚠ Late Filing Surcharge (${qConfig.label})`, value: lateSurcharge, isSurcharge: true } : null,
         { label: 'Net Tax Payable', value: netTax, isSubtotal: true },
         { label: '', isDivider: true },
         { label: 'C. OFFICE CONTRIBUTION (TAX ON BASIC + EMPLOYEE PF)', isHeader: true },
@@ -733,15 +692,10 @@ function updateMinTaxCard(applied, areaType, grossTax, investRebate, minimumTax)
     }
 }
 
-function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice }) {
+function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice }) {
     const list = document.getElementById('tips-list');
     list.innerHTML = '';
     const tips = [];
-
-    if (filingQuarter === 'q2') tips.push('🎉 Switch your filing quarter to "July–September" to get a 5% rebate on your net tax (up to ৳25,000)!');
-    else if (filingQuarter === 'q1' && earlyFilingRebate > 0) tips.push(`✅ Great! Filing early saves you ${formatTaka(earlyFilingRebate)} extra on top of your investment rebate.`);
-    else if (filingQuarter === 'q3') tips.push('⚠️ Filing Jan–Mar means a 2% surcharge. File earlier next year (Jul–Sep) to get a 5% discount instead!');
-    else if (filingQuarter === 'q4') tips.push('🚨 Filing Apr–Jun incurs 5% surcharge. File by September next year to save significant money!');
 
     if (totalInvested === 0 && taxableIncome > TAX_CONFIG.TAX_FREE_LIMITS.general) {
         tips.push('💡 No investments yet! With your income, you can potentially save tax. Start with PF, DPS (max ৳1,20,000/year), or Sanchayapatra.');
@@ -893,7 +847,6 @@ function resetForm() {
     document.querySelectorAll('input[type="number"]').forEach(el => { el.value = ''; el._manualOverride = false; });
     document.getElementById('taxpayer-type').value = 'general';
     document.getElementById('area-type').value     = 'dhaka_ctg';
-    document.getElementById('filing-quarter').value= 'q2';
     const extraDaysEl = document.getElementById('extra-days-count');
     if (extraDaysEl) extraDaysEl.value = '16';
     const augMonthsEl = document.getElementById('aug-months');

@@ -100,6 +100,14 @@ function setVal(id, value) {
     if (el && el !== document.activeElement) el.value = value || '';
 }
 
+// Editable rule overrides fall back to the NBR defaults in TAX_CONFIG.
+function getSetting(id, fallback) {
+    const el = document.getElementById(id);
+    if (!el || el.value === '') return fallback;
+    const v = parseFloat(el.value);
+    return isNaN(v) || v < 0 ? fallback : v;
+}
+
 // ════════════════════════════════════════════════
 // EVENT SETUP
 // ════════════════════════════════════════════════
@@ -228,13 +236,17 @@ function calculate() {
     const taxOnBasic = officeSlabDetails.totalTax;
 
     // ── 7. Investment inputs (14 categories) ──
+    const rebateRate       = getSetting('rebate-rate-pct', C.REBATE_RATE * 100) / 100;
+    const maxInvestAbsolute = getSetting('rebate-max-absolute', C.MAX_INVESTMENT_ABSOLUTE);
+    const dpsLimit         = getSetting('dps-annual-limit', C.DPS_ANNUAL_LIMIT);
+
     const invLifeInsurance   = getVal('inv-life-insurance');
     const invPF              = pfInput?._manualOverride ? getVal('inv-provident-fund') : totalPF;
     const invGPF             = getVal('inv-gpf');
     const invSuperannuation  = getVal('inv-superannuation');
     const invBenevolent      = getVal('inv-benevolent');
     const invSanchaypatra    = getVal('inv-sanchaypatra');
-    const invDPS             = Math.min(getVal('inv-dps'), C.DPS_ANNUAL_LIMIT);
+    const invDPS             = Math.min(getVal('inv-dps'), dpsLimit);
     const invShares          = getVal('inv-shares');
     const invMutual          = getVal('inv-mutual');
     const invPension         = getVal('inv-pension');
@@ -249,8 +261,8 @@ function calculate() {
 
     // ── 8. Investment rebate calculation ──
     const threePctIncome  = Math.round(taxableIncome * C.MAX_INVESTMENT_INCOME_PCT);
-    const maxRebatePossible = Math.min(threePctIncome, C.MAX_INVESTMENT_ABSOLUTE);
-    const pctInvest       = Math.round(totalInvested * C.REBATE_RATE);
+    const maxRebatePossible = Math.min(threePctIncome, maxInvestAbsolute);
+    const pctInvest       = Math.round(totalInvested * rebateRate);
     const admissibleRebate = Math.min(pctInvest, maxRebatePossible);
     const investRebate    = admissibleRebate;
 
@@ -311,7 +323,7 @@ function calculate() {
     const officeHeader = document.getElementById('office-slab-title-header');
     if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic + PF: ${formatTaka(officeTaxBase)})`;
     document.getElementById('office-slab-container').style.display = 'block';
-    updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS: Math.min(getVal('inv-dps'), C.DPS_ANNUAL_LIMIT), invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
+    updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS, invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
     updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, earlyFilingRebate, lateSurcharge, officePaidTax, finalPayable, qConfig, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
     updateMinTaxCard(minTaxApplied, areaType, grossTax, investRebate, minimumTax);
     updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, earlyFilingRebate, filingQuarter, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice });
@@ -419,8 +431,8 @@ function updateOpportunityDashboard({ threePctIncome, totalInvested, investRebat
     const container = document.getElementById('opp-dashboard-container');
     if (!container) return;
 
-    const maxRebatePossible = Math.min(threePctIncome, TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE);
-    const maxInvestmentAllowed = maxRebatePossible / TAX_CONFIG.REBATE_RATE;
+    const maxRebatePossible = Math.min(threePctIncome, getSetting('rebate-max-absolute', TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE));
+    const maxInvestmentAllowed = maxRebatePossible / (getSetting('rebate-rate-pct', TAX_CONFIG.REBATE_RATE * 100) / 100);
     
     const remainingInvestment = Math.max(0, maxInvestmentAllowed - totalInvested);
     const remainingRebate = Math.max(0, maxRebatePossible - investRebate);
@@ -729,10 +741,10 @@ function updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate
         tips.push('💡 No investments yet! With your income, you can potentially save tax. Start with PF, DPS (max ৳1,20,000/year), or Sanchayapatra.');
     }
 
-    const maxRebatePossible = Math.min(threePctIncome, TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE);
+    const maxRebatePossible = Math.min(threePctIncome, getSetting('rebate-max-absolute', TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE));
     if (threePctIncome > 0 && investRebate < maxRebatePossible) {
         const unusedRebate = maxRebatePossible - investRebate;
-        tips.push(`📊 You can earn up to ${formatTaka(unusedRebate)} more in investment rebate. Your 3%-of-income cap is ${formatTaka(threePctIncome)} (max ৳7,50,000).`);
+        tips.push(`📊 You can earn up to ${formatTaka(unusedRebate)} more in investment rebate. Your 3%-of-income cap is ${formatTaka(threePctIncome)} (max ${formatTaka(getSetting('rebate-max-absolute', TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE))}).`);
     }
 
     if (investRebate > 0) tips.push(`✅ Investment rebate saves you ${formatTaka(investRebate)} tax — that's 10% of your investments (subject to 3% income limit).`);
@@ -884,6 +896,12 @@ function resetForm() {
     if (festCountEl) festCountEl.value = '2';
     const perfCountEl = document.getElementById('perf-bonus-count');
     if (perfCountEl) perfCountEl.value = '2';
+    const rebateRateEl = document.getElementById('rebate-rate-pct');
+    if (rebateRateEl) rebateRateEl.value = String(TAX_CONFIG.REBATE_RATE * 100);
+    const rebateMaxEl = document.getElementById('rebate-max-absolute');
+    if (rebateMaxEl) rebateMaxEl.value = String(TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE);
+    const dpsLimitEl = document.getElementById('dps-annual-limit');
+    if (dpsLimitEl) dpsLimitEl.value = String(TAX_CONFIG.DPS_ANNUAL_LIMIT);
     document.getElementById('disabled-child').checked = false;
     document.getElementById('child-count-row').style.display = 'none';
     document.getElementById('festival-bonus-amt').value = '';

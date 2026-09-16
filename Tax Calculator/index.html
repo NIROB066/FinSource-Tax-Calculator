@@ -832,7 +832,28 @@
                             </div>
                             <div>
                                 <h2 class="section-title">Investment & Rebate</h2>
-                                <p class="section-desc">NBR-approved categories (Section 78). Rebate = 10% of investment, max 3% of taxable income or ৳7,50,000.</p>
+                                <p class="section-desc">NBR-approved categories (Section 78). Rebate rate, investment ceiling and DPS limit are editable below.</p>
+                            </div>
+                        </div>
+
+                        <div class="inv-cat-item" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.05);grid-template-columns:1fr;gap:10px;margin-bottom:10px">
+                            <div class="inv-cat-left">
+                                <div class="inv-cat-name">⚙️ Rebate Settings</div>
+                                <div class="inv-cat-desc">Defaults follow NBR FY 2025-26. Change them here if the rules differ.</div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                                <div>
+                                    <label class="form-label-sm">Rebate Rate (%)</label>
+                                    <div class="input-wrapper"><input type="number" id="rebate-rate-pct" class="form-input" value="10" min="0" max="100" step="0.01" oninput="calculate()" onchange="calculate()"></div>
+                                </div>
+                                <div>
+                                    <label class="form-label-sm">Max Rebate Limit (৳)</label>
+                                    <div class="input-wrapper"><span class="input-prefix">৳</span><input type="number" id="rebate-max-absolute" class="form-input" value="750000" min="0" oninput="calculate()" onchange="calculate()"></div>
+                                </div>
+                                <div>
+                                    <label class="form-label-sm">DPS Annual Limit (৳)</label>
+                                    <div class="input-wrapper"><span class="input-prefix">৳</span><input type="number" id="dps-annual-limit" class="form-input" value="120000" min="0" oninput="calculate()" onchange="calculate()"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -898,7 +919,7 @@
                                 <div class="inv-cat-left">
                                     <div class="inv-cat-name">💰 DPS — Deposit Pension Scheme</div>
                                     <div class="inv-cat-desc">Monthly savings with a scheduled bank or NBFI</div>
-                                    <div class="inv-cat-limit">⚠ Annual limit: ৳1,20,000 (excess is ignored)</div>
+                                    <div class="inv-cat-limit">⚠ Annual limit: set in Rebate Settings above (default ৳1,20,000)</div>
                                 </div>
                                 <div class="inv-cat-input input-wrapper"><span class="input-prefix">৳</span><input type="number" id="inv-dps" class="form-input" placeholder="0" min="0" oninput="calculate()" onchange="calculate()"></div>
                             </div>

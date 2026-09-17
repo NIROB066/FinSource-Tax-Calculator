@@ -59,6 +59,9 @@ const TAX_CONFIG = {
     // DPS annual limit
     DPS_ANNUAL_LIMIT: 120000,
 
+    // Sanchayapatra annual investment limit eligible for rebate
+    SANCHAYPATRA_ANNUAL_LIMIT: 500000,
+
     // Consolidated allowance exemption
     MAX_ALLOWANCE_EXEMPTION:  500000,
     ALLOWANCE_BASIC_PCT:      1/3,
@@ -103,13 +106,15 @@ function getSetting(id, fallback) {
 // ════════════════════════════════════════════════
 // EVENT SETUP
 // ════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('disabled-child').addEventListener('change', function() {
-        document.getElementById('child-count-row').style.display = this.checked ? 'block' : 'none';
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('disabled-child').addEventListener('change', function() {
+            document.getElementById('child-count-row').style.display = this.checked ? 'block' : 'none';
+            calculate();
+        });
         calculate();
     });
-    calculate();
-});
+}
 
 function changeChildCount(delta) {
     const el = document.getElementById('disabled-child-count');
@@ -132,143 +137,109 @@ function toggleBreakdown() {
 }
 
 // ════════════════════════════════════════════════
-// MAIN CALCULATION
+// PURE CALCULATION CORE (no DOM — used by UI and tests)
 // ════════════════════════════════════════════════
-let currentDisplayValue = 0;
+const INVESTMENT_KEYS = [
+    'lifeInsurance', 'providentFund', 'gpf', 'superannuation', 'benevolent',
+    'sanchaypatra', 'dps', 'shares', 'mutual', 'pension',
+    'charityHospital', 'disability', 'liberation', 'zakat',
+];
 
-function calculate() {
-    // ── 1. Read inputs ──
-    const taxpayerType   = document.getElementById('taxpayer-type').value;
-    const areaType       = document.getElementById('area-type').value;
-    const hasDisabledChild   = document.getElementById('disabled-child').checked;
-    const disabledChildCount = hasDisabledChild ? (parseInt(document.getElementById('disabled-child-count').value) || 1) : 0;
-    
-    const otherIncome      = getVal('other-income');
+function pick(value, fallback) {
+    return (value === undefined || value === null || isNaN(value)) ? fallback : value;
+}
 
-    const julyGross = getVal('july-gross');
-    const augGross  = getVal('aug-gross');
-    const augMonths = parseInt(document.getElementById('aug-months')?.value) || 11;
-
-    // Extra Days Salary: first 2 days at July rate (pre-increment), remaining days at Aug-June rate
-    const extraDaysCount = parseInt(document.getElementById('extra-days-count')?.value) || 16;
-    const julyExtraDays = Math.min(2, extraDaysCount);
-    const augExtraDays  = Math.max(0, extraDaysCount - 2);
-    const extraDaysSalary = Math.round((julyGross / 30) * julyExtraDays + (augGross / 30) * augExtraDays);
-    const extraDaysEl = document.getElementById('extra-days-salary');
-    if (extraDaysEl) extraDaysEl.value = extraDaysSalary || '';
-
-    // Update Aug card subtitle dynamically
-    const augLbl = document.getElementById('aug-months-label');
-    if (augLbl) augLbl.textContent = augMonths;
-
-    // Festival bonuses are 60% of the larger monthly salary; performance bonuses use the salary sequence.
-    const festivalBonusCount = parseInt(document.getElementById('festival-bonus-count')?.value ?? '2') || 0;
-    const perfBonusCount     = parseInt(document.getElementById('perf-bonus-count')?.value ?? '2') || 0;
-    const calculatePerformanceBonus = count => count > 0
-        ? Math.round((julyGross * 0.20) + (augGross * 0.20 * (count - 1)))
-        : 0;
-    const festEl = document.getElementById('festival-bonus-amt');
-    const perfEl = document.getElementById('perf-bonus-amt');
-    const festivalBonusAmt = festEl?._manualOverride ? getVal('festival-bonus-amt') : Math.round(augGross * 0.60 * festivalBonusCount);
-    const perfBonusAmt     = perfEl?._manualOverride ? getVal('perf-bonus-amt') : calculatePerformanceBonus(perfBonusCount);
-
-    // Keep calculated defaults until the user enters a manual amount.
-    if(festEl) festEl.value = festivalBonusAmt || '';
-    if(perfEl) perfEl.value = perfBonusAmt || '';
-
-    // ── 2. Salary Calculations (FinSource Rules) ──
+/**
+ * Computes the full tax breakdown from plain numbers.
+ * Every rule here mirrors Plan.txt + NBR FY 2025-26; the UI is only a thin wrapper.
+ */
+function computeTax(input = {}) {
     const C = TAX_CONFIG;
-    
-    // Total Salary (No breakdown counted for total)
-    const totalSalary = julyGross + (augGross * augMonths) + extraDaysSalary;
+
+    // ── 1. Normalise inputs ──
+    const taxpayerType       = input.taxpayerType || 'general';
+    const areaType           = input.areaType || 'dhaka_ctg';
+    const disabledChildCount = pick(input.disabledChildCount, 0);
+    const otherIncome        = pick(input.otherIncome, 0);
+    const julyGross          = pick(input.julyGross, 0);
+    const augGross           = pick(input.augGross, 0);
+    const augMonths          = pick(input.augMonths, 11);
+    const extraDaysCount     = pick(input.extraDaysCount, 0);
+    const festivalBonusCount = pick(input.festivalBonusCount, 0);
+    const perfBonusCount     = pick(input.perfBonusCount, 0);
+
+    const rebateRate        = pick(input.rebateRate, C.REBATE_RATE);
+    const maxInvestAbsolute = pick(input.maxInvestAbsolute, C.MAX_INVESTMENT_ABSOLUTE);
+    const dpsLimit          = pick(input.dpsLimit, C.DPS_ANNUAL_LIMIT);
+    const sanchaypatraLimit = pick(input.sanchaypatraLimit, C.SANCHAYPATRA_ANNUAL_LIMIT);
+
+    // ── 2. Salary ──
+    // Extra days: first 2 days at the July (pre-increment) rate, the rest at the Aug–June rate.
+    const julyExtraDays   = Math.min(2, extraDaysCount);
+    const augExtraDays    = Math.max(0, extraDaysCount - 2);
+    const extraDaysSalary = Math.round((julyGross / 30) * julyExtraDays + (augGross / 30) * augExtraDays);
+
+    const defaultFestivalBonus = Math.round(augGross * 0.60 * festivalBonusCount);
+    const defaultPerfBonus     = perfBonusCount > 0
+        ? Math.round((julyGross * 0.20) + (augGross * 0.20 * (perfBonusCount - 1)))
+        : 0;
+    const festivalBonusAmt = pick(input.festivalBonusAmt, defaultFestivalBonus);
+    const perfBonusAmt     = pick(input.perfBonusAmt, defaultPerfBonus);
+
+    const totalSalary    = julyGross + (augGross * augMonths) + extraDaysSalary;
     const annGrossSalary = totalSalary + festivalBonusAmt + perfBonusAmt;
-    
-    // Basic is only used to calculate Office Paid Tax and PF
+
+    // Basic is only used for the Office Paid Tax base and PF.
     const annBasic = Math.round(julyGross * C.SALARY_BASIC_PCT) + Math.round(augGross * C.SALARY_BASIC_PCT) * augMonths;
 
-    // ── 3. Provident Fund (July salary and Aug-June salary computed separately, Office share added to Gross Income) ──
+    // ── 3. Provident Fund ──
     const defaultPFEmployee = Math.round(julyGross * C.PF_EMPLOYEE_PCT) + Math.round(augGross * C.PF_EMPLOYEE_PCT) * augMonths;
     const defaultPFOffice   = Math.round(julyGross * C.PF_OFFICE_PCT) + Math.round(augGross * C.PF_OFFICE_PCT) * augMonths;
-    const pfEmployeeInput = document.getElementById('pf-employee-input');
-    const pfOfficeInput = document.getElementById('pf-office-input');
-    const annPFEmployee = pfEmployeeInput?._manualOverride ? getVal('pf-employee-input') : defaultPFEmployee;
-    const annPFOffice   = pfOfficeInput?._manualOverride ? getVal('pf-office-input') : defaultPFOffice;
-    if (pfEmployeeInput && !pfEmployeeInput._manualOverride) pfEmployeeInput.value = annPFEmployee || '';
-    if (pfOfficeInput && !pfOfficeInput._manualOverride) pfOfficeInput.value = annPFOffice || '';
-
-    // Auto-fill PF in investment field if user hasn't overridden it (Employer + Employee)
+    const annPFEmployee = pick(input.pfEmployee, defaultPFEmployee);
+    const annPFOffice   = pick(input.pfOffice, defaultPFOffice);
     const totalPF = annPFEmployee + annPFOffice;
-    const pfInput = document.getElementById('inv-provident-fund');
-    if (pfInput && !pfInput._manualOverride) {
-        pfInput.value = totalPF || '';
-    }
 
-    // ── 4. Update PF display ──
-    const pfRebEl = document.getElementById('pf-rebate-eligible');
-    if (pfRebEl) pfRebEl.textContent = formatTaka(totalPF);
-
-    // ── 5. Gross & Taxable income ──
-    // Gross Income = Salary + Bonuses + Other Income + Office PF contribution
+    // ── 4. Gross & taxable income ──
     const grossIncome  = annGrossSalary + otherIncome + annPFOffice;
-    
-    // Exemption: Standard NBR rule is min(5L, 1/3 of Total Income).
-    const salaryThird = Math.round(grossIncome * (1/3));
+    const salaryThird  = Math.round(grossIncome * (1 / 3));
     const allowanceExemption = Math.min(C.MAX_ALLOWANCE_EXEMPTION, salaryThird);
-    
     const taxableIncome = Math.max(0, grossIncome - allowanceExemption);
 
-    // Tax-free threshold
     let taxFreeLimit = C.TAX_FREE_LIMITS[taxpayerType] || C.TAX_FREE_LIMITS.general;
     taxFreeLimit += disabledChildCount * C.DISABLED_CHILD_EXTRA;
 
-    // ── 6. Office Paid Tax (base = Basic + the employee's own PF contribution) ──
+    // ── 5. Office tax base = Basic + the employee's own PF contribution ──
     const officeTaxBase = annBasic + annPFEmployee;
     const officeSlabDetails = computeSlabs(officeTaxBase, taxFreeLimit);
     const taxOnBasic = officeSlabDetails.totalTax;
 
-    // ── 7. Investment inputs (14 categories) ──
-    const rebateRate       = getSetting('rebate-rate-pct', C.REBATE_RATE * 100) / 100;
-    const maxInvestAbsolute = getSetting('rebate-max-absolute', C.MAX_INVESTMENT_ABSOLUTE);
-    const dpsLimit         = getSetting('dps-annual-limit', C.DPS_ANNUAL_LIMIT);
+    // ── 6. Investments (capped categories: DPS and Sanchayapatra) ──
+    const raw = input.investments || {};
+    const investments = {};
+    INVESTMENT_KEYS.forEach(k => { investments[k] = pick(raw[k], 0); });
+    investments.providentFund = pick(raw.providentFund, totalPF);
+    investments.dps           = Math.min(investments.dps, dpsLimit);
+    investments.sanchaypatra  = Math.min(investments.sanchaypatra, sanchaypatraLimit);
 
-    const invLifeInsurance   = getVal('inv-life-insurance');
-    const invPF              = pfInput?._manualOverride ? getVal('inv-provident-fund') : totalPF;
-    const invGPF             = getVal('inv-gpf');
-    const invSuperannuation  = getVal('inv-superannuation');
-    const invBenevolent      = getVal('inv-benevolent');
-    const invSanchaypatra    = getVal('inv-sanchaypatra');
-    const invDPS             = Math.min(getVal('inv-dps'), dpsLimit);
-    const invShares          = getVal('inv-shares');
-    const invMutual          = getVal('inv-mutual');
-    const invPension         = getVal('inv-pension');
-    const invCharityHospital = getVal('inv-charity-hospital');
-    const invDisability      = getVal('inv-disability');
-    const invLiberation      = getVal('inv-liberation');
-    const invZakat           = getVal('inv-zakat');
+    const totalInvested = INVESTMENT_KEYS.reduce((sum, k) => sum + investments[k], 0);
 
-    const totalInvested = invLifeInsurance + invPF + invGPF + invSuperannuation +
-        invBenevolent + invSanchaypatra + invDPS + invShares + invMutual +
-        invPension + invCharityHospital + invDisability + invLiberation + invZakat;
-
-    // ── 8. Investment rebate calculation ──
-    const threePctIncome  = Math.round(taxableIncome * C.MAX_INVESTMENT_INCOME_PCT);
+    // ── 7. Investment rebate ──
+    const threePctIncome    = Math.round(taxableIncome * C.MAX_INVESTMENT_INCOME_PCT);
     const maxRebatePossible = Math.min(threePctIncome, maxInvestAbsolute);
-    const pctInvest       = Math.round(totalInvested * rebateRate);
-    const admissibleRebate = Math.min(pctInvest, maxRebatePossible);
-    const investRebate    = admissibleRebate;
+    const pctInvest         = Math.round(totalInvested * rebateRate);
+    const admissibleRebate  = Math.min(pctInvest, maxRebatePossible);
+    const investRebate      = admissibleRebate;
 
-    // ── 9. Gross tax from slabs (on Total Taxable Income) ──
+    // ── 8. Gross tax from slabs ──
     const slabDetails = computeSlabs(taxableIncome, taxFreeLimit);
     const grossTax = slabDetails.totalTax;
 
-    // ── 9.5 Office Paid Tax Calculation ──
+    // ── 9. Office paid tax ──
     const minimumTax = C.MINIMUM_TAX[areaType] || 0;
     const isAboveThreshold = taxableIncome > taxFreeLimit;
-    // Office assumes employee will invest up to max capacity
+    // Office assumes the employee will invest up to the maximum rebate capacity.
     const assumedNetTaxByOffice = Math.max(0, grossTax - maxRebatePossible);
-    // Office pays the tax on basic + employee PF, but never more than the assumed net tax
     let officePaidTax = Math.min(taxOnBasic, assumedNetTaxByOffice);
-    // Minimum tax stays due even after a full rebate, so the office covers it.
     let officeMinTaxApplied = false;
     if (isAboveThreshold && assumedNetTaxByOffice < minimumTax) {
         officePaidTax = minimumTax;
@@ -284,14 +255,107 @@ function calculate() {
         minTaxApplied = true;
     }
 
-    // ── 12. Final Tax Payable ──
-    const finalPayable = Math.max(0, netTax - officePaidTax);
-
-    // ── 13. Effective rate & TDS ──
-    const effectiveRate = grossIncome > 0 ? (netTax / grossIncome) * 100 : 0;
+    const finalPayable     = Math.max(0, netTax - officePaidTax);
+    const effectiveRate    = grossIncome > 0 ? (netTax / grossIncome) * 100 : 0;
     const monthlyOfficeTDS = Math.round(officePaidTax / 12);
 
-    // ── 14. Update all UI ──
+    return {
+        extraDaysSalary, festivalBonusAmt, perfBonusAmt, defaultFestivalBonus, defaultPerfBonus,
+        totalSalary, annGrossSalary, annBasic,
+        defaultPFEmployee, defaultPFOffice, annPFEmployee, annPFOffice, totalPF,
+        otherIncome, grossIncome, salaryThird, allowanceExemption, taxableIncome, taxFreeLimit,
+        officeTaxBase, officeSlabDetails, taxOnBasic,
+        investments, totalInvested,
+        threePctIncome, maxRebatePossible, admissibleRebate, investRebate,
+        slabDetails, grossTax,
+        minimumTax, assumedNetTaxByOffice, officePaidTax, officeMinTaxApplied,
+        taxAfterRebate, netTax, minTaxApplied,
+        finalPayable, effectiveRate, monthlyOfficeTDS, augMonths,
+    };
+}
+
+// ════════════════════════════════════════════════
+// MAIN CALCULATION
+// ════════════════════════════════════════════════
+let currentDisplayValue = 0;
+
+function calculate() {
+    // ── 1. Read inputs ──
+    const taxpayerType   = document.getElementById('taxpayer-type').value;
+    const areaType       = document.getElementById('area-type').value;
+    const hasDisabledChild   = document.getElementById('disabled-child').checked;
+    const disabledChildCount = hasDisabledChild ? (parseInt(document.getElementById('disabled-child-count').value) || 1) : 0;
+
+    const C = TAX_CONFIG;
+    const festEl = document.getElementById('festival-bonus-amt');
+    const perfEl = document.getElementById('perf-bonus-amt');
+    const pfEmployeeInput = document.getElementById('pf-employee-input');
+    const pfOfficeInput   = document.getElementById('pf-office-input');
+    const pfInput         = document.getElementById('inv-provident-fund');
+
+    const result = computeTax({
+        taxpayerType,
+        areaType,
+        disabledChildCount,
+        otherIncome: getVal('other-income'),
+        julyGross:   getVal('july-gross'),
+        augGross:    getVal('aug-gross'),
+        augMonths:   parseInt(document.getElementById('aug-months')?.value) || 11,
+        extraDaysCount: parseInt(document.getElementById('extra-days-count')?.value) || 16,
+        festivalBonusCount: parseInt(document.getElementById('festival-bonus-count')?.value ?? '2') || 0,
+        perfBonusCount:     parseInt(document.getElementById('perf-bonus-count')?.value ?? '2') || 0,
+        festivalBonusAmt: festEl?._manualOverride ? getVal('festival-bonus-amt') : undefined,
+        perfBonusAmt:     perfEl?._manualOverride ? getVal('perf-bonus-amt') : undefined,
+        pfEmployee: pfEmployeeInput?._manualOverride ? getVal('pf-employee-input') : undefined,
+        pfOffice:   pfOfficeInput?._manualOverride   ? getVal('pf-office-input')   : undefined,
+        rebateRate:        getSetting('rebate-rate-pct', C.REBATE_RATE * 100) / 100,
+        maxInvestAbsolute: getSetting('rebate-max-absolute', C.MAX_INVESTMENT_ABSOLUTE),
+        dpsLimit:          getSetting('dps-annual-limit', C.DPS_ANNUAL_LIMIT),
+        sanchaypatraLimit: getSetting('sanchaypatra-annual-limit', C.SANCHAYPATRA_ANNUAL_LIMIT),
+        investments: {
+            lifeInsurance:   getVal('inv-life-insurance'),
+            providentFund:   pfInput?._manualOverride ? getVal('inv-provident-fund') : undefined,
+            gpf:             getVal('inv-gpf'),
+            superannuation:  getVal('inv-superannuation'),
+            benevolent:      getVal('inv-benevolent'),
+            sanchaypatra:    getVal('inv-sanchaypatra'),
+            dps:             getVal('inv-dps'),
+            shares:          getVal('inv-shares'),
+            mutual:          getVal('inv-mutual'),
+            pension:         getVal('inv-pension'),
+            charityHospital: getVal('inv-charity-hospital'),
+            disability:      getVal('inv-disability'),
+            liberation:      getVal('inv-liberation'),
+            zakat:           getVal('inv-zakat'),
+        },
+    });
+
+    const {
+        extraDaysSalary, festivalBonusAmt, perfBonusAmt, totalSalary, annGrossSalary, annBasic,
+        annPFEmployee, annPFOffice, totalPF, otherIncome, grossIncome, salaryThird,
+        allowanceExemption, taxableIncome, taxFreeLimit, officeTaxBase, officeSlabDetails, taxOnBasic,
+        investments, totalInvested, threePctIncome, maxRebatePossible, admissibleRebate, investRebate,
+        slabDetails, grossTax, minimumTax, assumedNetTaxByOffice, officePaidTax, officeMinTaxApplied,
+        netTax, minTaxApplied, finalPayable, effectiveRate, monthlyOfficeTDS, augMonths,
+    } = result;
+
+    // ── 2. Write derived defaults back into the form ──
+    const extraDaysEl = document.getElementById('extra-days-salary');
+    if (extraDaysEl) extraDaysEl.value = extraDaysSalary || '';
+
+    const augLbl = document.getElementById('aug-months-label');
+    if (augLbl) augLbl.textContent = augMonths;
+
+    if (festEl) festEl.value = festivalBonusAmt || '';
+    if (perfEl) perfEl.value = perfBonusAmt || '';
+    if (pfEmployeeInput && !pfEmployeeInput._manualOverride) pfEmployeeInput.value = annPFEmployee || '';
+    if (pfOfficeInput && !pfOfficeInput._manualOverride) pfOfficeInput.value = annPFOffice || '';
+    if (pfInput && !pfInput._manualOverride) pfInput.value = totalPF || '';
+
+    const pfRebEl = document.getElementById('pf-rebate-eligible');
+    if (pfRebEl) pfRebEl.textContent = formatTaka(totalPF);
+
+    // ── 3. Update all UI ──
     updateIncomeStrip(grossIncome, allowanceExemption, taxableIncome);
     updateInvestmentBar(totalInvested, admissibleRebate, threePctIncome);
     updateResultHero({ netTax, finalPayable, monthlyOfficeTDS, grossTax, investRebate, effectiveRate, officePaidTax, taxOnBasic, officeMinTaxApplied });
@@ -308,7 +372,7 @@ function calculate() {
     const officeHeader = document.getElementById('office-slab-title-header');
     if (officeHeader) officeHeader.textContent = `Office Paid Tax Slab (Basic + Employee PF: ${formatTaka(officeTaxBase)})`;
     document.getElementById('office-slab-container').style.display = 'block';
-    updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList({ invLifeInsurance, invPF, invGPF, invSuperannuation, invBenevolent, invSanchaypatra, invDPS, invShares, invMutual, invPension, invCharityHospital, invDisability, invLiberation, invZakat }) });
+    updateInvestmentChart({ totalInvested, admissibleRebate, investRebate, threePctIncome, categories: buildCategoryList(investments) });
     updateComputationTable({ totalSalary, extraDaysSalary, festivalBonusAmt, perfBonusAmt, annGrossSalary, otherIncome, grossIncome, allowanceExemption, taxableIncome, taxFreeLimit, grossTax, investRebate, admissibleRebate, netTax, minTaxApplied, minimumTax, officePaidTax, finalPayable, salaryThird, annBasic, officeTaxBase, annPFEmployee, annPFOffice, taxOnBasic, maxRebatePossible, assumedNetTaxByOffice });
     updateMinTaxCard(minTaxApplied, areaType, grossTax, investRebate, minimumTax);
     updateTips({ taxableIncome, totalInvested, threePctIncome, investRebate, netTax, grossTax, officePaidTax, taxOnBasic, assumedNetTaxByOffice });
@@ -318,19 +382,21 @@ function calculate() {
 }
 
 // Mark PF field as manually overridden if user types in it
-document.addEventListener('DOMContentLoaded', () => {
-    const pfInput = document.getElementById('inv-provident-fund');
-    if (pfInput) {
-        pfInput.addEventListener('input', () => { pfInput._manualOverride = true; });
-    }
-
-    ['festival-bonus-amt', 'perf-bonus-amt', 'pf-employee-input', 'pf-office-input'].forEach(id => {
-        const bonusInput = document.getElementById(id);
-        if (bonusInput) {
-            bonusInput.addEventListener('input', () => { bonusInput._manualOverride = true; });
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const pfInput = document.getElementById('inv-provident-fund');
+        if (pfInput) {
+            pfInput.addEventListener('input', () => { pfInput._manualOverride = true; });
         }
+
+        ['festival-bonus-amt', 'perf-bonus-amt', 'pf-employee-input', 'pf-office-input'].forEach(id => {
+            const bonusInput = document.getElementById(id);
+            if (bonusInput) {
+                bonusInput.addEventListener('input', () => { bonusInput._manualOverride = true; });
+            }
+        });
     });
-});
+}
 
 // ════════════════════════════════════════════════
 // SLAB CALCULATION
@@ -538,20 +604,20 @@ function updateSlabTable(containerId, slabDetails, taxableIncome, totalLabel) {
 
 function buildCategoryList(inv) {
     return [
-        { name: '🛡️ Life Insurance',      amount: inv.invLifeInsurance },
-        { name: '🏦 Provident Fund (RPF)', amount: inv.invPF },
-        { name: '🏛️ GPF',                  amount: inv.invGPF },
-        { name: '🎯 Superannuation',       amount: inv.invSuperannuation },
-        { name: '🤝 Benevolent/Group Ins.',amount: inv.invBenevolent },
-        { name: '📜 Sanchayapatra/Govt Sec',amount: inv.invSanchaypatra },
-        { name: '💰 DPS (max ৳1.2L)',     amount: inv.invDPS },
-        { name: '📈 Listed Shares (DSE/CSE)',amount: inv.invShares },
-        { name: '📊 Mutual Funds',         amount: inv.invMutual },
-        { name: '🏅 Universal Pension',    amount: inv.invPension },
-        { name: '🏥 Charity Hospital',     amount: inv.invCharityHospital },
-        { name: '♿ Disabled Welfare',     amount: inv.invDisability },
-        { name: '🏳️ Liberation/Bangabandhu',amount: inv.invLiberation },
-        { name: '🕌 Zakat Fund',           amount: inv.invZakat },
+        { name: '🛡️ Life Insurance',      amount: inv.lifeInsurance },
+        { name: '🏦 Provident Fund (RPF)', amount: inv.providentFund },
+        { name: '🏛️ GPF',                  amount: inv.gpf },
+        { name: '🎯 Superannuation',       amount: inv.superannuation },
+        { name: '🤝 Benevolent/Group Ins.',amount: inv.benevolent },
+        { name: '📜 Sanchayapatra/Govt Sec',amount: inv.sanchaypatra },
+        { name: '💰 DPS (max ৳1.2L)',     amount: inv.dps },
+        { name: '📈 Listed Shares (DSE/CSE)',amount: inv.shares },
+        { name: '📊 Mutual Funds',         amount: inv.mutual },
+        { name: '🏅 Universal Pension',    amount: inv.pension },
+        { name: '🏥 Charity Hospital',     amount: inv.charityHospital },
+        { name: '♿ Disabled Welfare',     amount: inv.disability },
+        { name: '🏳️ Liberation/Bangabandhu',amount: inv.liberation },
+        { name: '🕌 Zakat Fund',           amount: inv.zakat },
     ].filter(c => c.amount > 0);
 }
 
@@ -861,10 +927,17 @@ function resetForm() {
     if (rebateMaxEl) rebateMaxEl.value = String(TAX_CONFIG.MAX_INVESTMENT_ABSOLUTE);
     const dpsLimitEl = document.getElementById('dps-annual-limit');
     if (dpsLimitEl) dpsLimitEl.value = String(TAX_CONFIG.DPS_ANNUAL_LIMIT);
+    const sanchayLimitEl = document.getElementById('sanchaypatra-annual-limit');
+    if (sanchayLimitEl) sanchayLimitEl.value = String(TAX_CONFIG.SANCHAYPATRA_ANNUAL_LIMIT);
     document.getElementById('disabled-child').checked = false;
     document.getElementById('child-count-row').style.display = 'none';
     document.getElementById('festival-bonus-amt').value = '';
     document.getElementById('perf-bonus-amt').value = '';
     animTarget = 0;
     calculate();
+}
+
+// Node/CommonJS export so the pure core can be unit-tested without a browser.
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { TAX_CONFIG, computeTax, computeSlabs, formatTaka };
 }

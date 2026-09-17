@@ -158,7 +158,7 @@ class TaxApp(tk.Tk):
         grid_inv.pack(fill=tk.X)
         
         self.create_input(grid_inv, "DPS (Max 1.2L)", "inv_dps", 0, 0)
-        self.create_input(grid_inv, "Savings Certificate", "inv_sanchaypatra", 1, 0)
+        self.create_input(grid_inv, "Savings Certificate (Max 5L)", "inv_sanchaypatra", 1, 0)
         self.create_input(grid_inv, "Listed Shares", "inv_shares", 2, 0)
         self.create_input(grid_inv, "Mutual Funds", "inv_mutual", 3, 0)
         self.create_input(grid_inv, "Life Insurance", "inv_life", 4, 0)
@@ -259,8 +259,8 @@ class TaxApp(tk.Tk):
             
             # Investments (14 categories)
             total_inv = (
-                self.vars['inv_dps'].get() +
-                self.vars['inv_sanchaypatra'].get() +
+                min(self.vars['inv_dps'].get(), C.get('DPS_ANNUAL_LIMIT', 120000)) +
+                min(self.vars['inv_sanchaypatra'].get(), C.get('SANCHAYPATRA_ANNUAL_LIMIT', 500000)) +
                 self.vars['inv_shares'].get() +
                 self.vars['inv_mutual'].get() +
                 self.vars['inv_life'].get() +

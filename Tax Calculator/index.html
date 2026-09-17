@@ -93,6 +93,7 @@
         .inv-cat-desc { font-size: 11px; color: var(--text-muted); }
         .inv-cat-limit { font-size: 10px; color: var(--accent-amber); font-weight: 600; }
         .inv-cat-input { width: 130px; }
+        .rebate-settings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 
         /* Summary strip redesigned */
         .income-summary-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px; }
@@ -308,6 +309,7 @@
             .form-grid { grid-template-columns: 1fr !important; }
             .inv-cat-item { grid-template-columns: 1fr !important; gap: 8px !important; }
             .inv-cat-input { width: 100% !important; }
+            .rebate-settings-grid { grid-template-columns: 1fr !important; }
             .income-summary-box { grid-template-columns: 1fr !important; }
             .hero-stats { flex-wrap: wrap; gap: 8px; }
             .stat-divider { display: none; }
@@ -832,7 +834,7 @@
                                 <div class="inv-cat-name">⚙️ Rebate Settings</div>
                                 <div class="inv-cat-desc">Defaults follow NBR FY 2025-26. Change them here if the rules differ.</div>
                             </div>
-                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+                            <div class="rebate-settings-grid">
                                 <div>
                                     <label class="form-label-sm">Rebate Rate (%)</label>
                                     <div class="input-wrapper"><input type="number" id="rebate-rate-pct" class="form-input" value="10" min="0" max="100" step="0.01" oninput="calculate()" onchange="calculate()"></div>
